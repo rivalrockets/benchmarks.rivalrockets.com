@@ -1,5 +1,5 @@
 #!flask/bin/python
-from flask import Flask, jsonify, abort
+from flask import Flask, jsonify, abort, url_for
 
 app = Flask(__name__)
 
@@ -22,7 +22,7 @@ machines = [
 # 1. basic api endpoint, list all machines
 @app.route('/api/v1.0/machines', methods=['GET'])
 def get_machines():
-        return jsonify({'machines': machines})
+        return jsonify({'machines': [make_public_machine(machine) for machine in machines]})
 
 
 # 2. more intersting API endpoint, select single machine
@@ -50,6 +50,7 @@ def create_machine():
     machines.append(machine)
     return jsonify({'machine': machine}), 201
 
+
 # 5. a PUT method for updating existing machine
 import six
 
@@ -71,6 +72,7 @@ def update_machine(machine_id):
     machine[0]['owner'] = request.json.get('owner', machine[0]['owner'])
     return jsonify({'machine': machine[0]})
 
+
 # 6. a DELETE method
 @app.route('/api/v1.0/machines/<int:machine_id>', methods=['DELETE'])
 def delete_machine(machine_id):
@@ -80,6 +82,7 @@ def delete_machine(machine_id):
     machines.remove(machine[0])
     return jsonify({'result': True})
 
+
 # 3. improved 404 erorr handler that responds with JSON
 from flask import make_response
 
@@ -87,6 +90,16 @@ from flask import make_response
 def not_found(error):
     return make_response(jsonify({'error': 'Not found'}), 404)
 
+
+# 7. A function to generate machine json with public uri for ident
+def make_public_machine(machine):
+    new_machine = {}
+    for field in machine:
+        if field == 'id':
+            new_machine['uri'] = url_for('get_machine', machine_id=machine['id'], _external=True)
+        else:
+            new_machine[field] = machine[field]
+    return new_machine
 
 if __name__ == '__main__':
     app.run(debug=True)
