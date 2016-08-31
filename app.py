@@ -3,6 +3,37 @@ from flask import Flask, jsonify, abort, url_for
 
 app = Flask(__name__)
 
+
+# 3. improved 404 error handler that responds with JSON
+from flask import make_response
+
+@app.errorhandler(404)
+def not_found(error):
+    return make_response(jsonify({'error': 'Not found'}), 404)
+
+
+# 8. A deceptively simple authentication scheme
+from flask_httpauth import HTTPBasicAuth
+auth = HTTPBasicAuth()
+
+
+@auth.get_password
+def get_password(username):
+    if username == 'kit':
+        return 'password'
+    return None
+
+
+@auth.error_handler
+def unauthorized():
+    return make_response(jsonify({'error': 'Unauthorized access'}), 403)
+    # return 403 instead of 401 to prevent browsers from displaying the default auth dialog
+    
+@app.errorhandler(400)
+def not_found(error):
+    return make_response(jsonify( { 'error': 'Bad request' } ), 400)
+
+
 machines = [
     {
         'id': 1,
@@ -21,12 +52,14 @@ machines = [
 
 # 1. basic api endpoint, list all machines
 @app.route('/api/v1.0/machines', methods=['GET'])
+@auth.login_required
 def get_machines():
         return jsonify({'machines': [make_public_machine(machine) for machine in machines]})
 
 
 # 2. more intersting API endpoint, select single machine
 @app.route('/api/v1.0/machines/<int:machine_id>', methods=['GET'])
+@auth.login_required
 def get_machine(machine_id):
     machine = [machine for machine in machines if machine['id'] == machine_id]
     if len(machine) == 0:
@@ -38,6 +71,7 @@ def get_machine(machine_id):
 from flask import request
 
 @app.route('/api/v1.0/machines', methods=['POST'])
+@auth.login_required
 def create_machine():
     if not request.json or not 'system_name' in request.json:
         abort(400)
@@ -55,6 +89,7 @@ def create_machine():
 import six
 
 @app.route('/api/v1.0/machines/<int:machine_id>', methods=['PUT'])
+@auth.login_required
 def update_machine(machine_id):
     machine = [machine for machine in machines if machine['id'] == machine_id]
     if len(machine) == 0:
@@ -83,14 +118,6 @@ def delete_machine(machine_id):
     return jsonify({'result': True})
 
 
-# 3. improved 404 erorr handler that responds with JSON
-from flask import make_response
-
-@app.errorhandler(404)
-def not_found(error):
-    return make_response(jsonify({'error': 'Not found'}), 404)
-
-
 # 7. A function to generate machine json with public uri for ident
 def make_public_machine(machine):
     new_machine = {}
@@ -100,6 +127,7 @@ def make_public_machine(machine):
         else:
             new_machine[field] = machine[field]
     return new_machine
+
 
 if __name__ == '__main__':
     app.run(debug=True)
