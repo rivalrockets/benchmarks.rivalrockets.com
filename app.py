@@ -50,83 +50,87 @@ machines = [
 ]
 
 
-# 1. basic api endpoint, list all machines
-@app.route('/api/v1.0/machines', methods=['GET'])
-@auth.login_required
-def get_machines():
-        return jsonify({'machines': [make_public_machine(machine) for machine in machines]})
+from flask_restful import Api, Resource, reqparse, fields, marshal
+
+# flask_restful fields usage:
+# note that the 'Url' field type takes the 'endpoint' for the arg
+machine_fields = {
+    'system_name': fields.String,
+    'system_notes': fields.String,
+    'owner': fields.String,
+    'uri': fields.Url('machine')
+}
 
 
-# 2. more intersting API endpoint, select single machine
-@app.route('/api/v1.0/machines/<int:machine_id>', methods=['GET'])
-@auth.login_required
-def get_machine(machine_id):
-    machine = [machine for machine in machines if machine['id'] == machine_id]
-    if len(machine) == 0:
-        abort(404)
-    return jsonify({'machine': machine[0]})
+# Now with Flask-RESTful adds Api, Resource, reqparse, fields, and marshal
+api = Api(app)
+
+# View subclass of Resource (which inherits from MethodView)
+class MachineListAPI(Resource):
+    decorators = [auth.login_required]
+
+    def __init__(self):
+        self.reqparse = reqparse.RequestParser()
+        self.reqparse.add_argument('system_name', type = str, required = True, help = 'No machine name provided', location = 'json')
+        self.reqparse.add_argument('system_notes', type = str, default = "", location = 'json')
+        self.reqparse.add_argument('owner', type = str, default = "", location = 'json')
+        super(MachineListAPI, self).__init__()
+
+    def get(self):
+        return {'machines': [marshal(machine, machine_fields) for machine in machines]}
+    
+    def post(self):
+        args = self.reqparse.parse_args()
+        machine = {
+            'id': machines[-1]['id'] + 1,
+            'system_name': args['system_name'],
+            'system_notes': args['system_notes'],
+            'owner': args['owner']
+        }
+        machines.append(machine)
+        return {'machine': marshal(machine, machine_fields)}, 201
+
+class MachineAPI(Resource):
+    decorators = [auth.login_required]
+
+    def __init__(self):
+        self.reqparse = reqparse.RequestParser()
+        self.reqparse.add_argument('system_name', type = str, location = 'json')
+        self.reqparse.add_argument('system_notes', type = str, location = 'json')
+        self.reqparse.add_argument('owner', type = str, location = 'json')
+        super(MachineAPI, self).__init__()
+
+    def get(self, id):
+        machine = [machine for machine in machines if machine['id'] == id]
+        if len(machine) == 0:
+            abort(404)
+        return {'machine': marshal(machine[0], machine_fields)}
+
+    # why no post()?
+    # looks like it's because the the method views of the *ListAPI class don't get 'id'
+    # this uses Flask-RESTful's marshal method
+    def put(self, id):
+        machine = [machine for machine in machines if machine['id'] == id]
+        if len(machine) == 0:
+            abort(404)
+        machine = machine[0]
+        args = self.reqparse.parse_args()
+        for k, v in args.items():
+            if v != None:
+                machine[k] = v
+        return {'machine': marshal(machine, machine_fields)}
+    
+    def delete(self, id):
+        machine = [machine for machine in machines if machine ['id'] == id]
+        if len(machine) == 0:
+            abort(404)
+        machines.remove(machine[0])
+        return {'result': True}
 
 
-# 4. a POST method for adding a new machine into our "database"
-from flask import request
+api.add_resource(MachineListAPI, '/api/v1.0/machines', endpoint = 'machines')
+api.add_resource(MachineAPI, '/api/v1.0/machines/<int:id>', endpoint = 'machine')
 
-@app.route('/api/v1.0/machines', methods=['POST'])
-@auth.login_required
-def create_machine():
-    if not request.json or not 'system_name' in request.json:
-        abort(400)
-    machine = {
-        'id': machines[-1]['id'] + 1,
-        'system_name': request.json['system_name'],
-        'system_notes': request.json.get('system_notes', ""),
-        'owner': request.json.get('owner', "")
-    }
-    machines.append(machine)
-    return jsonify({'machine': machine}), 201
-
-
-# 5. a PUT method for updating existing machine
-import six
-
-@app.route('/api/v1.0/machines/<int:machine_id>', methods=['PUT'])
-@auth.login_required
-def update_machine(machine_id):
-    machine = [machine for machine in machines if machine['id'] == machine_id]
-    if len(machine) == 0:
-        abort(404)
-    if not request.json:
-        abort(400)
-    if 'system_name' in request.json and not isinstance(request.json['system_name'], six.string_types):
-        abort(400)
-    if 'system_notes' in request.json and not isinstance(request.json['system_notes'], six.string_types):
-        abort(400)
-    if 'owner' in request.json and not isinstance(request.json['owner'], six.string_types):
-        abort(400)
-    machine[0]['system_name'] = request.json.get('system_name', machine[0]['system_name'])
-    machine[0]['system_notes'] = request.json.get('system_notes', machine[0]['system_notes'])
-    machine[0]['owner'] = request.json.get('owner', machine[0]['owner'])
-    return jsonify({'machine': machine[0]})
-
-
-# 6. a DELETE method
-@app.route('/api/v1.0/machines/<int:machine_id>', methods=['DELETE'])
-def delete_machine(machine_id):
-    machine = [machine for machine in machines if machine['id'] == machine_id]
-    if len(machine) == 0:
-        abort(404)
-    machines.remove(machine[0])
-    return jsonify({'result': True})
-
-
-# 7. A function to generate machine json with public uri for ident
-def make_public_machine(machine):
-    new_machine = {}
-    for field in machine:
-        if field == 'id':
-            new_machine['uri'] = url_for('get_machine', machine_id=machine['id'], _external=True)
-        else:
-            new_machine[field] = machine[field]
-    return new_machine
 
 
 if __name__ == '__main__':
