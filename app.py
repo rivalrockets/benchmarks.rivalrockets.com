@@ -33,21 +33,24 @@ def unauthorized():
 def not_found(error):
     return make_response(jsonify( { 'error': 'Bad request' } ), 400)
 
+# Convert simple dict to SQLAlchemy
+from flask_sqlalchemy import SQLAlchemy
+import os
 
-machines = [
-    {
-        'id': 1,
-        'system_name': 'Caged Sun',
-        'system_notes': 'Sean\'s monster build',
-        'owner': 'Sean Lane'
-    },
-    {
-        'id': 2,
-        'system_name': 'Polyphonic',
-        'system_notes': 'Kit\'s powerful trashcan',
-        'owner': 'Kit Roed'
-    }
-]
+basedir = os.path.abspath(os.path.dirname(__file__))
+
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'data.sqlite')
+app.config['SQLALCHEMY_COMMIT_ON_TEARDOWN'] = True
+
+db = SQLAlchemy(app)
+
+class Machine(db.Model):
+    __tablename__ = 'machines'
+    id = db.Column(db.Integer, primary_key=True)
+    system_name = db.Column(db.Text)
+    system_notes = db.Column(db.Text)
+    system_notes_html = db.Column(db.Text)
+    owner = db.Column(db.Text)
 
 
 from flask_restful import Api, Resource, reqparse, fields, marshal
@@ -77,18 +80,22 @@ class MachineListAPI(Resource):
         super(MachineListAPI, self).__init__()
 
     def get(self):
+        machines = Machine.query.all()
         return {'machines': [marshal(machine, machine_fields) for machine in machines]}
     
     def post(self):
         args = self.reqparse.parse_args()
-        machine = {
+        machine = Machine(system_name=args['system_name'], system_notes=args['system_notes'], owner=args['owner']) 
+        '''{
             'id': machines[-1]['id'] + 1,
             'system_name': args['system_name'],
             'system_notes': args['system_notes'],
             'owner': args['owner']
-        }
-        machines.append(machine)
+        }'''
+        db.session.add(machine)
+        db.session.commit()
         return {'machine': marshal(machine, machine_fields)}, 201
+
 
 class MachineAPI(Resource):
     decorators = [auth.login_required]
@@ -101,23 +108,29 @@ class MachineAPI(Resource):
         super(MachineAPI, self).__init__()
 
     def get(self, id):
-        machine = [machine for machine in machines if machine['id'] == id]
-        if len(machine) == 0:
+        machine = Machine.query.filter(Machine.id==id).first()
+        if machine is None:
             abort(404)
-        return {'machine': marshal(machine[0], machine_fields)}
+        return {'machine': marshal(machine, machine_fields)}
 
     # why no post()?
     # looks like it's because the the method views of the *ListAPI class don't get 'id'
     # this uses Flask-RESTful's marshal method
     def put(self, id):
-        machine = [machine for machine in machines if machine['id'] == id]
-        if len(machine) == 0:
+        machine = Machine.query.filter(Machine.id==id).first()
+        if machine is None:
             abort(404)
-        machine = machine[0]
+
+        # a little clever loop to go through all the args passed and 
+        # apply them to the newly instantiated Machine object
+        # since the SQLAlchemy machine object does not support item
+        # assignment, let's use some setattr func
         args = self.reqparse.parse_args()
         for k, v in args.items():
             if v != None:
-                machine[k] = v
+                setattr(machine, k, v)
+        # autocommit? This doesn't appear to be necessary---leaving in for now.
+        db.session.commit()
         return {'machine': marshal(machine, machine_fields)}
     
     def delete(self, id):
@@ -132,6 +145,6 @@ api.add_resource(MachineListAPI, '/api/v1.0/machines', endpoint = 'machines')
 api.add_resource(MachineAPI, '/api/v1.0/machines/<int:id>', endpoint = 'machine')
 
 
-
 if __name__ == '__main__':
+    db.create_all()
     app.run(debug=True)
