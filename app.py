@@ -1,5 +1,5 @@
 #!flask/bin/python
-from flask import Flask, jsonify, abort, url_for
+from flask import Flask, jsonify, abort, g, url_for
 
 app = Flask(__name__)
 
@@ -15,13 +15,6 @@ def not_found(error):
 # 8. A deceptively simple authentication scheme
 from flask_httpauth import HTTPBasicAuth
 auth = HTTPBasicAuth()
-
-
-@auth.get_password
-def get_password(username):
-    if username == 'kit':
-        return 'password'
-    return None
 
 
 @auth.error_handler
@@ -44,6 +37,55 @@ app.config['SQLALCHEMY_COMMIT_ON_TEARDOWN'] = True
 
 db = SQLAlchemy(app)
 
+
+# replacing the authentication model to use a simple token-based approach
+from passlib.apps import custom_app_context as pwd_context
+from itsdangerous import (TimedJSONWebSignatureSerializer
+                          as Serializer, BadSignature, SignatureExpired)
+
+app.config['SECRET_KEY'] = 'quincy the kumquat queried the queen'
+
+class User(db.Model):
+    __tablename__ = 'users'
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(32), index=True)
+    password_hash = db.Column(db.String(64))
+
+    def hash_password(self, password):
+        self.password_hash = pwd_context.encrypt(password)
+
+    def verify_password(self, password):
+        return pwd_context.verify(password, self.password_hash)
+    
+    def generate_auth_token(self, expiration=600):
+        s = Serializer(app.config['SECRET_KEY'], expires_in=expiration)
+        return s.dumps({'id': self.id})
+
+    @staticmethod
+    def verify_auth_token(token):
+        s = Serializer(app.config['SECRET_KEY'])
+        try:
+            data = s.loads(token)
+        except SignatureExpired:
+            return None # valid token, but expired
+        except BadSignature:
+            return None # invalid token
+        user = User.query.get(data['id'])
+        return user
+
+@auth.verify_password
+def verify_password(username_or_token, password):
+    # first try to authenticate by token
+    user = User.verify_auth_token(username_or_token)
+    if not user:
+        # try to authenticate with username/password
+        user = User.query.filter_by(username=username_or_token).first()
+        if not user or not user.verify_password(password):
+            return False
+    g.user = user
+    return True
+
+
 class Machine(db.Model):
     __tablename__ = 'machines'
     id = db.Column(db.Integer, primary_key=True)
@@ -57,6 +99,11 @@ from flask_restful import Api, Resource, reqparse, fields, marshal
 
 # flask_restful fields usage:
 # note that the 'Url' field type takes the 'endpoint' for the arg
+user_fields = {
+    'username': fields.String,
+    'Location': fields.Url('user')
+}
+
 machine_fields = {
     'system_name': fields.String,
     'system_notes': fields.String,
@@ -67,6 +114,38 @@ machine_fields = {
 
 # Now with Flask-RESTful adds Api, Resource, reqparse, fields, and marshal
 api = Api(app)
+
+# New user API class
+class UserAPI(Resource):
+    def __init__(self):
+        self.reqparse = reqparse.RequestParser()
+        self.reqparse.add_argument('username', type = str, required = True, location = 'json')
+        self.reqparse.add_argument('password', type = str, required = True, location = 'json')
+        super(UserAPI, self).__init__()
+
+    def get(self, id):
+        user = User.query.get(id)
+        if user is None:
+            abort(404)
+        return {'user': marshal(user, user_fields)}
+    
+    def post(self):
+        args = self.reqparse.parse_args()
+        user = User(username=args['username'])
+        user.hash_password(args['password'])
+        db.session.add(user)
+        db.session.commit()
+        return {'user': marshal(user, user_fields)}, 201
+
+
+# New Token API class
+class TokenAPI(Resource):
+    decorators = [auth.login_required]
+
+    def get(self):
+        token = g.user.generate_auth_token(600)
+        return {'token': token.decode('ascii'), 'duration': 600}
+
 
 # View subclass of Resource (which inherits from MethodView)
 class MachineListAPI(Resource):
@@ -136,6 +215,9 @@ class MachineAPI(Resource):
         return {'result': True}
 
 
+api.add_resource(UserAPI, '/api/v1.0/users', endpoint = 'users')
+api.add_resource(UserAPI, '/api/v1.0/users/<int:id>', endpoint = 'user')
+api.add_resource(TokenAPI, '/api/v1.0/token', endpoint = 'token')
 api.add_resource(MachineListAPI, '/api/v1.0/machines', endpoint = 'machines')
 api.add_resource(MachineAPI, '/api/v1.0/machines/<int:id>', endpoint = 'machine')
 
