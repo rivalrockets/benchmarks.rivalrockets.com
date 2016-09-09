@@ -86,12 +86,7 @@ class MachineListAPI(Resource):
     def post(self):
         args = self.reqparse.parse_args()
         machine = Machine(system_name=args['system_name'], system_notes=args['system_notes'], owner=args['owner']) 
-        '''{
-            'id': machines[-1]['id'] + 1,
-            'system_name': args['system_name'],
-            'system_notes': args['system_notes'],
-            'owner': args['owner']
-        }'''
+
         db.session.add(machine)
         db.session.commit()
         return {'machine': marshal(machine, machine_fields)}, 201
