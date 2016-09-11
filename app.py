@@ -1,43 +1,32 @@
 #!flask/bin/python
-from flask import Flask, jsonify, abort, g, url_for
+import os
+from flask import Flask, jsonify, abort, g, url_for, make_response
+from flask_httpauth import HTTPBasicAuth
+from flask_restful import Api, Resource, reqparse, fields, marshal
 from models import User, Machine, db
 
+
+basedir = os.path.abspath(os.path.dirname(__file__))
 app = Flask(__name__)
+auth = HTTPBasicAuth()
+api = Api(app)
 
-
-# 3. improved 404 error handler that responds with JSON
-from flask import make_response
 
 @app.errorhandler(404)
 def not_found(error):
     return make_response(jsonify({'error': 'Not found'}), 404)
 
 
-# 8. A deceptively simple authentication scheme
-from flask_httpauth import HTTPBasicAuth
-auth = HTTPBasicAuth()
-
-
 @auth.error_handler
 def unauthorized():
     return make_response(jsonify({'error': 'Unauthorized access'}), 403)
     # return 403 instead of 401 to prevent browsers from displaying the default auth dialog
-    
+
+
 @app.errorhandler(400)
 def not_found(error):
     return make_response(jsonify( { 'error': 'Bad request' } ), 400)
 
-import os
-
-basedir = os.path.abspath(os.path.dirname(__file__))
-
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'data.sqlite')
-app.config['SQLALCHEMY_COMMIT_ON_TEARDOWN'] = True
-
-# replacing the authentication model to use a simple token-based approach
-app.config['SECRET_KEY'] = 'quincy the kumquat queried the queen'
-
-db.init_app(app)
 
 @auth.verify_password
 def verify_password(username_or_token, password):
@@ -51,7 +40,12 @@ def verify_password(username_or_token, password):
     g.user = user
     return True
 
-from flask_restful import Api, Resource, reqparse, fields, marshal
+
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'data.sqlite')
+app.config['SQLALCHEMY_COMMIT_ON_TEARDOWN'] = True
+app.config['SECRET_KEY'] = 'quincy the kumquat queried the queen'
+
+db.init_app(app)
 
 # flask_restful fields usage:
 # note that the 'Url' field type takes the 'endpoint' for the arg
@@ -67,9 +61,6 @@ machine_fields = {
     'uri': fields.Url('machine', absolute=True)
 }
 
-
-# Now with Flask-RESTful adds Api, Resource, reqparse, fields, and marshal
-api = Api(app)
 
 # New user API class
 class UserAPI(Resource):
