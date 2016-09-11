@@ -2,7 +2,7 @@
 import os
 from flask import Flask, jsonify, abort, g, url_for, make_response
 from flask_httpauth import HTTPBasicAuth
-from flask_restful import Api, Resource, reqparse, fields, marshal
+from flask_restful import Api, Resource, reqparse, fields, marshal_with
 from models import User, Machine, db
 
 
@@ -70,19 +70,18 @@ class UserAPI(Resource):
         self.reqparse.add_argument('password', type = str, required = True, location = 'json')
         super(UserAPI, self).__init__()
 
+    @marshal_with(user_fields, envelope='user')
     def get(self, id):
-        user = User.query.get(id)
-        if user is None:
-            abort(404)
-        return {'user': marshal(user, user_fields)}
+        return User.query.get_or_404(id)
     
+    @marshal_with(user_fields, envelope='user')
     def post(self):
         args = self.reqparse.parse_args()
         user = User(username=args['username'])
         user.hash_password(args['password'])
         db.session.add(user)
         db.session.commit()
-        return {'user': marshal(user, user_fields)}, 201
+        return user, 201
 
 
 # New Token API class
@@ -105,17 +104,18 @@ class MachineListAPI(Resource):
         self.reqparse.add_argument('owner', type = str, default = "", location = 'json')
         super(MachineListAPI, self).__init__()
 
-    def get(self):
-        machines = Machine.query.all()
-        return {'machines': [marshal(machine, machine_fields) for machine in machines]}
+    @marshal_with(machine_fields, envelope='machines')
+    def get(self): 
+        return Machine.query.all()
     
+    @marshal_with(machine_fields, envelope='machine')
     def post(self):
         args = self.reqparse.parse_args()
         machine = Machine(system_name=args['system_name'], system_notes=args['system_notes'], owner=args['owner']) 
 
         db.session.add(machine)
         db.session.commit()
-        return {'machine': marshal(machine, machine_fields)}, 201
+        return machine, 201
 
 
 class MachineAPI(Resource):
@@ -128,19 +128,13 @@ class MachineAPI(Resource):
         self.reqparse.add_argument('owner', type = str, location = 'json')
         super(MachineAPI, self).__init__()
 
+    @marshal_with(machine_fields, envelope='machine')
     def get(self, id):
-        machine = Machine.query.filter(Machine.id==id).first()
-        if machine is None:
-            abort(404)
-        return {'machine': marshal(machine, machine_fields)}
+        return Machine.query.get_or_404(id)
 
-    # why no post()?
-    # looks like it's because the the method views of the *ListAPI class don't get 'id'
-    # this uses Flask-RESTful's marshal method
+    @marshal_with(machine_fields, envelope='machine')
     def put(self, id):
-        machine = Machine.query.filter(Machine.id==id).first()
-        if machine is None:
-            abort(404)
+        machine = Machine.query.get_or_404(id)
 
         # a little clever loop to go through all the args passed and 
         # apply them to the newly instantiated Machine object
@@ -152,7 +146,7 @@ class MachineAPI(Resource):
                 setattr(machine, k, v)
         # autocommit? This doesn't appear to be necessary---leaving in for now.
         db.session.commit()
-        return {'machine': marshal(machine, machine_fields)}
+        return machine
     
     def delete(self, id):
         machine = [machine for machine in machines if machine ['id'] == id]
