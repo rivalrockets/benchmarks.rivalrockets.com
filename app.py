@@ -149,10 +149,8 @@ class MachineAPI(Resource):
         return machine
     
     def delete(self, id):
-        machine = [machine for machine in machines if machine ['id'] == id]
-        if len(machine) == 0:
-            abort(404)
-        machines.remove(machine[0])
+        Machine.query.filter(Machine.id == id).delete()
+        db.session.commit()
         return {'result': True}
 
 
