@@ -58,7 +58,8 @@ machine_fields = {
     'system_name': fields.String,
     'system_notes': fields.String,
     'owner': fields.String,
-    'uri': fields.Url('machine', absolute=True)
+    'uri': fields.Url('machine', absolute=True),
+    'author_id': fields.Integer
 }
 
 
@@ -111,7 +112,8 @@ class MachineListAPI(Resource):
     @marshal_with(machine_fields, envelope='machine')
     def post(self):
         args = self.reqparse.parse_args()
-        machine = Machine(system_name=args['system_name'], system_notes=args['system_notes'], owner=args['owner']) 
+        machine = Machine(system_name=args['system_name'], system_notes=args['system_notes'], owner=args['owner'],
+                                            author_id=g.user.id) 
 
         db.session.add(machine)
         db.session.commit()

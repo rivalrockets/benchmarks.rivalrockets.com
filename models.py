@@ -13,6 +13,7 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(32), index=True)
     password_hash = db.Column(db.String(64))
+    machines = db.relationship('Machine', backref='author', lazy='dynamic')
 
     def hash_password(self, password):
         self.password_hash = pwd_context.encrypt(password)
@@ -44,4 +45,5 @@ class Machine(db.Model):
     system_notes = db.Column(db.Text)
     system_notes_html = db.Column(db.Text)
     owner = db.Column(db.Text)
+    author_id = db.Column(db.Integer, db.ForeignKey('users.id'))
 
