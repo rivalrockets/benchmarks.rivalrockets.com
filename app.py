@@ -96,8 +96,6 @@ class TokenAPI(Resource):
 
 # View subclass of Resource (which inherits from MethodView)
 class MachineListAPI(Resource):
-    decorators = [auth.login_required]
-
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
         self.reqparse.add_argument('system_name', type = str, required = True, help = 'No machine name provided', location = 'json')
@@ -109,6 +107,7 @@ class MachineListAPI(Resource):
     def get(self): 
         return Machine.query.all()
     
+    @auth.login_required
     @marshal_with(machine_fields, envelope='machine')
     def post(self):
         args = self.reqparse.parse_args()
@@ -121,8 +120,6 @@ class MachineListAPI(Resource):
 
 
 class MachineAPI(Resource):
-    decorators = [auth.login_required]
-
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
         self.reqparse.add_argument('system_name', type = str, location = 'json')
@@ -134,6 +131,7 @@ class MachineAPI(Resource):
     def get(self, id):
         return Machine.query.get_or_404(id)
 
+    @auth.login_required
     @marshal_with(machine_fields, envelope='machine')
     def put(self, id):
         machine = Machine.query.get_or_404(id)
@@ -149,7 +147,7 @@ class MachineAPI(Resource):
         # autocommit? This doesn't appear to be necessary---leaving in for now.
         db.session.commit()
         return machine
-    
+    @auth.login_required
     def delete(self, id):
         Machine.query.filter(Machine.id == id).delete()
         db.session.commit()
