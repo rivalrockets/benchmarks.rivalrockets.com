@@ -1,4 +1,5 @@
 # replacing the authentication model to use a simple token-based approach
+from datetime import datetime
 from flask import current_app
 from passlib.apps import custom_app_context as pwd_context
 from itsdangerous import (TimedJSONWebSignatureSerializer
@@ -45,5 +46,30 @@ class Machine(db.Model):
     system_notes = db.Column(db.Text)
     system_notes_html = db.Column(db.Text)
     owner = db.Column(db.Text)
+    active_revision_id = db.Column(db.Integer, db.ForeignKey('machines.id'))
+    timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
     author_id = db.Column(db.Integer, db.ForeignKey('users.id'))
 
+    revisions = db.relationship('Revision', backref='machines', lazy='dynamic')
+
+
+class Revision(db.Model):
+    __tablename__ = 'revisions'
+    id = db.Column(db.Integer, primary_key=True)
+    cpu_make = db.Column(db.String(64))
+    cpu_name = db.Column(db.String(64))
+    cpu_socket = db.Column(db.String(64))
+    cpu_mhz = db.Column(db.Integer)
+    cpu_proc_cores = db.Column(db.Integer)
+    chipset = db.Column(db.String(64))
+    system_memory_mb = db.Column(db.Integer)
+    system_memory_mhz = db.Column(db.Integer)
+    gpu_name = db.Column(db.String(64))
+    gpu_make = db.Column(db.String(64))
+    gpu_memory_mb = db.Column(db.Integer)
+    revision_notes = db.Column(db.Text)
+    revision_notes_html = db.Column(db.Text)
+    pcpartpicker_url = db.Column(db.String(128))
+    timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+    author_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    machine_id = db.Column(db.Integer, db.ForeignKey('machines.id'))
