@@ -3,7 +3,7 @@ import os
 from flask import Flask, jsonify, abort, g, url_for, make_response
 from flask_httpauth import HTTPBasicAuth
 from flask_restful import Api, Resource, reqparse, fields, marshal_with
-from models import User, Machine, Revision, db
+from models import User, Machine, Revision, CinebenchR15Result, db
 
 
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -83,6 +83,13 @@ revision_fields = {
     'author_id': fields.Integer,
     'machine_id': fields.Integer,
     'uri': fields.Url('revision', absolute=True)
+}
+
+cinebenchr15result_fields = {
+    'result_date': fields.DateTime,
+    'cpu_cb': fields.Integer,
+    'opengl_fps': fields.Integer,
+    'uri': fields.Url('cinebenchr15result', absolute=True)
 }
 
 
@@ -165,7 +172,7 @@ class MachineAPI(Resource):
         # assignment, let's use some setattr func
         args = self.reqparse.parse_args()
         for k, v in args.items():
-            if v != None:
+            if v is not None:
                 setattr(machine, k, v)
         # autocommit? This doesn't appear to be necessary---leaving in for now.
         db.session.commit()
@@ -176,6 +183,7 @@ class MachineAPI(Resource):
         Machine.query.filter(Machine.id == id).delete()
         db.session.commit()
         return {'result': True}
+
 
 # global revision list... might be better to have a per-machine revision list only.
 class RevisionListAPI(Resource):
@@ -212,7 +220,7 @@ class RevisionAPI(Resource):
         revision = Revision.query.get_or_404(id)
         args = self.reqparse.parse_args()
         for k, v in args.items():
-            if v != None:
+            if v is not None:
                 setattr(revision, k, v)
         db.session.commit()
         return revision
@@ -272,7 +280,7 @@ class MachineRevisionListAPI(Resource):
         # Why doesn't this work?
         #revision.machine = machine
         # Instead, I'm doing this:
-        revision.machine_id=machine.id
+        revision.machine_id = machine.id
 
         #TODO: set the Machine.active_revision_id to this revision
 
@@ -281,15 +289,88 @@ class MachineRevisionListAPI(Resource):
         return revision, 201
 
 
-api.add_resource(UserAPI, '/api/v1.0/users', endpoint = 'users')
-api.add_resource(UserAPI, '/api/v1.0/users/<int:id>', endpoint = 'user')
-api.add_resource(TokenAPI, '/api/v1.0/token', endpoint = 'token')
-api.add_resource(MachineListAPI, '/api/v1.0/machines', endpoint = 'machines')
-api.add_resource(MachineAPI, '/api/v1.0/machines/<int:id>', endpoint = 'machine')
-api.add_resource(RevisionListAPI, '/api/v1.0/revisions', endpoint = 'revisions')
-api.add_resource(RevisionAPI, '/api/v1.0/revisions/<int:id>', endpoint = 'revision')
-api.add_resource(MachineRevisionListAPI, '/api/v1.0/machines/<int:id>/revisions', endpoint = 'machine_revisions')
+class CinebenchR15ResultListAPI(Resource):
+    @marshal_with(cinebenchr15result_fields, envelope='cinebenchr15results')
+    def get(self):
+        return CinebenchR15Result.query.all()
 
+
+class CinebenchR15ResultAPI(Resource):
+    def __init__(self):
+        self.reqparse = reqparse.RequestParser()
+        self.reqparse.add_argument('result_date', type=str, location='json')
+        self.reqparse.add_argument('cpu_cb', type=int, location='json')
+        self.reqparse.add_argument('opengl_fps', type=int, location='json')
+        super(CinebenchR15ResultListAPI, self).__init__()
+
+    @marshal_with(cinebenchr15result_fields, envelope='cinebenchr15result')
+    def get(self, id):
+        return CinebenchR15Result.query.get_or_404(id)
+
+    @auth.login_required
+    def get(self, id):
+        return CinebenchR15Result.query.get_or_404(id)
+
+    @auth.login_required
+    @marshal_with(cinebenchr15result_fields, envelope='cinebenchr15result')
+    def put(self, id):
+        cinebenchr15result = CinebenchR15Result.query.get_or_404(id)
+        args = self.reqparse.parse_args()
+        for k, v in args.items():
+            if v is not None:
+                setattr(cinebenchr15result, k, v)
+        db.session.commit()
+        return cinebenchr15result
+
+    @auth.login_required
+    def delete(self, id):
+        CinebenchR15Result.query.filter(CinebenchR15Result.id == id).delete()
+        db.session.commit()
+        return {'result': True}
+
+
+class RevisionCinebenchR15ResultListAPI(Resource):
+    def __init__(self):
+        self.reqparse = reqparse.RequestParser()
+        self.reqparse.add_argument('result_date', type=str, location='json')
+        self.reqparse.add_argument('cpu_cb', type=int, location='json')
+        self.reqparse.add_argument('opengl_fps', type=int, location='json')
+        super(RevisionCinebenchR15ResultListAPI, self).__init__()
+
+    @marshal_with(revision_fields, envelope='cinebenchr15results')
+    def get(self, id):
+        revision = Revision.query.get_or_404(id)
+        return revision.cinebenchr15results.all()
+
+    @auth.login_required
+    @marshal_with(cinebenchr15result_fields, envelope='cinebenchr15result')
+    def post(self, id):
+        args = self.reqparse.parse_args()
+        revision = Revision.query.get_or_404(id)
+
+        cinebenchr15result = CinebenchR15Result(
+            result_date=args['timestamp'],
+            cpu_cb=args['cpu_cb'],
+            opengl_fps=args['opengl_fps'])
+
+        cinebenchr15result.revision_id = revision.id
+        revision.append(cinebenchr15result)
+        db.session.commit()
+
+        return cinebenchr15result, 201
+
+
+api.add_resource(UserAPI, '/api/v1.0/users', endpoint='users')
+api.add_resource(UserAPI, '/api/v1.0/users/<int:id>', endpoint='user')
+api.add_resource(TokenAPI, '/api/v1.0/token', endpoint='token')
+api.add_resource(MachineListAPI, '/api/v1.0/machines', endpoint='machines')
+api.add_resource(MachineAPI, '/api/v1.0/machines/<int:id>', endpoint='machine')
+api.add_resource(RevisionListAPI, '/api/v1.0/revisions', endpoint='revisions')
+api.add_resource(RevisionAPI, '/api/v1.0/revisions/<int:id>', endpoint='revision')
+api.add_resource(MachineRevisionListAPI, '/api/v1.0/machines/<int:id>/revisions', endpoint='machine_revisions')
+api.add_resource(CinebenchR15ResultListAPI, '/api/v1.0/cinebenchr15results', endpoint='cinebenchr15results')
+api.add_resource(CinebenchR15ResultAPI, '/api/v1.0/cinebenchr15results/<int:id>', endpoint='cinebenchr15result')
+api.add_resource(RevisionCinebenchR15ResultListAPI, '/api/v1.0/revisions/<int:id>/cinebenchr15results', endpoint='revision_cinebenchr15results')
 
 
 if __name__ == '__main__':

@@ -9,6 +9,7 @@ from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
 
+
 class User(db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
@@ -73,3 +74,15 @@ class Revision(db.Model):
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
     author_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     machine_id = db.Column(db.Integer, db.ForeignKey('machines.id'))
+
+    cinebenchr15results = db.relationship('CinebenchR15Result', backref='revisions', lazy='dynamic')
+
+
+class CinebenchR15Result(db.Model):
+    __tablename__ = 'cinebenchr15results'
+    id = db.Column(db.Integer, primary_key=True)
+    result_date = db.Column(db.DateTime, index=True, default=datetime.utcnow())
+    cpu_cb = db.Column(db.Integer, index=True)
+    opengl_fps = db.Column(db.Integer, index=True)
+    revision_id = db.Column(db.Integer, db.ForeignKey('revisions.id'))
+    
