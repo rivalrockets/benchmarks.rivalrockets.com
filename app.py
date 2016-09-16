@@ -337,7 +337,7 @@ class RevisionCinebenchR15ResultListAPI(Resource):
         self.reqparse.add_argument('opengl_fps', type=int, location='json')
         super(RevisionCinebenchR15ResultListAPI, self).__init__()
 
-    @marshal_with(revision_fields, envelope='cinebenchr15results')
+    @marshal_with(cinebenchr15result_fields, envelope='cinebenchr15results')
     def get(self, id):
         revision = Revision.query.get_or_404(id)
         return revision.cinebenchr15results.all()
