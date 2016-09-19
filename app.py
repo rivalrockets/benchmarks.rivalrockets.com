@@ -3,7 +3,7 @@ import os
 from flask import Flask, jsonify, abort, g, url_for, make_response
 from flask_httpauth import HTTPBasicAuth
 from flask_restful import Api, Resource, reqparse, fields, marshal_with
-from models import User, Machine, Revision, CinebenchR15Result, db
+from models import User, Machine, Revision, CinebenchR15Result, Futuremark3DMarkIcestormResult, db
 
 
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -90,6 +90,13 @@ cinebenchr15result_fields = {
     'cpu_cb': fields.Integer,
     'opengl_fps': fields.Integer,
     'uri': fields.Url('cinebenchr15result', absolute=True)
+}
+
+futuremark3dmarkresult_fields = {
+    'result_date': fields.DateTime,
+    'score': fields.Integer,
+    'result_url': fields.String,
+    'uri': fields.Url('futuremark3dmarkicestormresult', absolute=True)
 }
 
 
@@ -268,7 +275,7 @@ class MachineRevisionListAPI(Resource):
             cpu_mhz=args['cpu_mhz'],
             cpu_proc_cores=args['cpu_proc_cores'],
             chipset=args['chipset'],
-            system_memory_gb=args['system_memory_mb'],
+            system_memory_gb=args['system_memory_gb'],
             system_memory_mhz=args['system_memory_mhz'],
             gpu_name=args['gpu_name'],
             gpu_make=args['gpu_make'],
@@ -349,15 +356,86 @@ class RevisionCinebenchR15ResultListAPI(Resource):
         revision = Revision.query.get_or_404(id)
 
         cinebenchr15result = CinebenchR15Result(
-            result_date=args['timestamp'],
+            result_date=args['result_date'],
             cpu_cb=args['cpu_cb'],
             opengl_fps=args['opengl_fps'])
 
         cinebenchr15result.revision_id = revision.id
-        revision.append(cinebenchr15result)
+        db.session.add(cinebenchr15result)
         db.session.commit()
 
         return cinebenchr15result, 201
+
+
+class Futuremark3DMarkIcestormResultListAPI(Resource):
+    @marshal_with(futuremark3dmarkresult_fields, envelope='futuremark3dmarkicestormresults')
+    def get(self):
+        return Futuremark3DMarkIcestormResult.query.all()
+
+
+class Futuremark3DMarkIcestormResultAPI(Resource):
+    def __init__(self):
+        self.reqparse = reqparse.RequestParser()
+        self.reqparse.add_argument('result_date', type=str, location='json')
+        self.reqparse.add_argument('score', type=int, location='json')
+        self.reqparse.add_argument('result_url', type=str, location='json')
+        super(Futuremark3DMarkIcestormResultListAPI, self).__init__()
+
+    @marshal_with(futuremark3dmarkresult_fields, envelope='futuremark3dmarkicestormresult')
+    def get(self, id):
+        return Futuremark3DMarkIcestormResult.query.get_or_404(id)
+
+    @auth.login_required
+    def get(self, id):
+        return Futuremark3DMarkIcestormResult.query.get_or_404(id)
+
+    @auth.login_required
+    @marshal_with(futuremark3dmarkresult_fields, envelope='futuremark3dmarkicestormresult')
+    def put(self, id):
+        futuremark3dmarkicestormresult = Futuremark3DMarkIcestormResult.query.get_or_404(id)
+        args = self.reqparse.parse_args()
+        for k, v in args.items():
+            if v is not None:
+                setattr(futuremark3dmarkicestormresult, k, v)
+        db.session.commit()
+        return futuremark3dmarkicestormresult
+
+    @auth.login_required
+    def delete(self, id):
+        Futuremark3DMarkIcestormResult.query.filter(Futuremark3DMarkIcestormResult.id == id).delete()
+        db.session.commit()
+        return {'result': True}
+
+
+class RevisionFuturemark3DMarkIcestormResultListAPI(Resource):
+    def __init__(self):
+        self.reqparse = reqparse.RequestParser()
+        self.reqparse.add_argument('result_date', type=str, location='json')
+        self.reqparse.add_argument('score', type=int, location='json')
+        self.reqparse.add_argument('result_url', type=str, location='json')
+        super(RevisionFuturemark3DMarkIcestormResultListAPI, self).__init__()
+
+    @marshal_with(futuremark3dmarkresult_fields, envelope='futuremark3dmarkicestormresults')
+    def get(self, id):
+        revision = Revision.query.get_or_404(id)
+        return revision.futuremark3dmarkicestormresults.all()
+
+    @auth.login_required
+    @marshal_with(futuremark3dmarkresult_fields, envelope='futuremark3dmarkicestormresult')
+    def post(self, id):
+        args = self.reqparse.parse_args()
+        revision = Revision.query.get_or_404(id)
+
+        futuremark3dmarkicestormresult = Futuremark3DMarkIcestormResult(
+            result_date=args['result_date'],
+            score=args['score'],
+            results_url=args['results_url'])
+
+        futuremark3dmarkicestormresult.revision_id = revision.id
+        db.session.add(futuremark3dmarkicestormresult)
+        db.session.commit()
+
+        return futuremark3dmarkicestormresult, 201
 
 
 api.add_resource(UserAPI, '/api/v1.0/users', endpoint='users')
@@ -368,9 +446,14 @@ api.add_resource(MachineAPI, '/api/v1.0/machines/<int:id>', endpoint='machine')
 api.add_resource(RevisionListAPI, '/api/v1.0/revisions', endpoint='revisions')
 api.add_resource(RevisionAPI, '/api/v1.0/revisions/<int:id>', endpoint='revision')
 api.add_resource(MachineRevisionListAPI, '/api/v1.0/machines/<int:id>/revisions', endpoint='machine_revisions')
+
 api.add_resource(CinebenchR15ResultListAPI, '/api/v1.0/cinebenchr15results', endpoint='cinebenchr15results')
 api.add_resource(CinebenchR15ResultAPI, '/api/v1.0/cinebenchr15results/<int:id>', endpoint='cinebenchr15result')
-api.add_resource(RevisionCinebenchR15ResultListAPI, '/api/v1.0/revisions/<int:id>/cinebenchr15results', endpoint='revision_cinebenchr15results')
+api.add_resource(RevisionCinebenchR15ResultListAPI, '/api/v1.0/revisions/<int:id>/futuremark3dmarkicestormresults', endpoint='revision_cinebenchr15results')
+
+api.add_resource(Futuremark3DMarkIcestormResultListAPI, '/api/v1.0/futuremark3dmarkicestormresultsresults', endpoint='futuremark3dmarkicestormresults')
+api.add_resource(Futuremark3DMarkIcestormResultAPI, '/api/v1.0/futuremark3dmarkicestormresults/<int:id>', endpoint='futuremark3dmarkicestormresult')
+api.add_resource(RevisionFuturemark3DMarkIcestormResultListAPI, '/api/v1.0/revisions/<int:id>/futuremark3dmarkicestormresults', endpoint='revision_futuremark3dmarkicestormresults')
 
 
 if __name__ == '__main__':

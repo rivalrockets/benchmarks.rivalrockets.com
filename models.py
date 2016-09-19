@@ -70,12 +70,14 @@ class Revision(db.Model):
     gpu_memory_mb = db.Column(db.Integer)
     revision_notes = db.Column(db.Text)
     revision_notes_html = db.Column(db.Text)
-    pcpartpicker_url = db.Column(db.String(128))
+    pcpartpicker_url = db.Column(db.String)
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
     author_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     machine_id = db.Column(db.Integer, db.ForeignKey('machines.id'))
 
     cinebenchr15results = db.relationship('CinebenchR15Result', backref='revisions', lazy='dynamic')
+    futuremark3dmarkicestormresults = db.relationship('Futuremark3DMarkIcestormResult', backref='revisions',
+                                                      lazy='dynamic')
 
 
 class CinebenchR15Result(db.Model):
@@ -85,4 +87,12 @@ class CinebenchR15Result(db.Model):
     cpu_cb = db.Column(db.Integer, index=True)
     opengl_fps = db.Column(db.Integer, index=True)
     revision_id = db.Column(db.Integer, db.ForeignKey('revisions.id'))
-    
+
+
+class Futuremark3DMarkIcestormResult(db.Model):
+    __tablename__ = 'futuremark3dmarkicestormresults'
+    id = db.Column(db.Integer, primary_key=True)
+    result_date = db.Column(db.DateTime, index=True, default=datetime.utcnow())
+    score = db.Column(db.Integer, index=True)
+    result_url = db.Column(db.String)
+    revision_id = db.Column(db.Integer, db.ForeignKey('revisions.id'))
