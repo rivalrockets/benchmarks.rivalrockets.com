@@ -75,7 +75,7 @@ revision_fields = {
     'system_memory_mhz': fields.Integer,
     'gpu_name': fields.String,
     'gpu_make': fields.String,
-    'gpu_memory_mb': fields.Integer,
+    'gpu_memory_gb': fields.Integer,
     'revision_notes': fields.String,
     'revision_notes_html': fields.String,
     'pcpartpicker_url': fields.String,
@@ -201,7 +201,7 @@ class RevisionAPI(Resource):
         self.reqparse.add_argument('cpu_mhz', type = int, location = 'json')
         self.reqparse.add_argument('cpu_proc_cores', type = int, location = 'json')
         self.reqparse.add_argument('chipset', type = str, location = 'json')
-        self.reqparse.add_argument('system_memory_mb', type = int, location = 'json')
+        self.reqparse.add_argument('system_memory_gb', type = int, location = 'json')
         self.reqparse.add_argument('system_memory_mhz', type = int, location = 'json')
         self.reqparse.add_argument('gpu_name', type = str, location = 'json')
         self.reqparse.add_argument('gpu_make', type = str, location = 'json')
@@ -241,7 +241,7 @@ class MachineRevisionListAPI(Resource):
         self.reqparse.add_argument('cpu_mhz', type = int, location = 'json')
         self.reqparse.add_argument('cpu_proc_cores', type = int, location = 'json')
         self.reqparse.add_argument('chipset', type = str, location = 'json')
-        self.reqparse.add_argument('system_memory_mb', type = int, location = 'json')
+        self.reqparse.add_argument('system_memory_gb', type = int, location = 'json')
         self.reqparse.add_argument('system_memory_mhz', type = int, location = 'json')
         self.reqparse.add_argument('gpu_name', type = str, location = 'json')
         self.reqparse.add_argument('gpu_make', type = str, location = 'json')
@@ -268,7 +268,7 @@ class MachineRevisionListAPI(Resource):
             cpu_mhz=args['cpu_mhz'],
             cpu_proc_cores=args['cpu_proc_cores'],
             chipset=args['chipset'],
-            system_memory_mb=args['system_memory_mb'],
+            system_memory_gb=args['system_memory_mb'],
             system_memory_mhz=args['system_memory_mhz'],
             gpu_name=args['gpu_name'],
             gpu_make=args['gpu_make'],

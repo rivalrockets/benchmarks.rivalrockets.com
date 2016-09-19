@@ -63,7 +63,7 @@ class Revision(db.Model):
     cpu_mhz = db.Column(db.Integer)
     cpu_proc_cores = db.Column(db.Integer)
     chipset = db.Column(db.String(64))
-    system_memory_mb = db.Column(db.Integer)
+    system_memory_gb = db.Column(db.Integer)
     system_memory_mhz = db.Column(db.Integer)
     gpu_name = db.Column(db.String(64))
     gpu_make = db.Column(db.String(64))
