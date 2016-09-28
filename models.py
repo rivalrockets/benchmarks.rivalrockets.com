@@ -76,7 +76,7 @@ class Revision(db.Model):
     machine_id = db.Column(db.Integer, db.ForeignKey('machines.id'))
 
     cinebenchr15results = db.relationship('CinebenchR15Result', backref='revisions', lazy='dynamic')
-    futuremark3dmarkicestormresults = db.relationship('Futuremark3DMarkIcestormResult', backref='revisions',
+    futuremark3dmarkresults = db.relationship('Futuremark3DMarkResult', backref='revisions',
                                                       lazy='dynamic')
 
 
@@ -89,10 +89,17 @@ class CinebenchR15Result(db.Model):
     revision_id = db.Column(db.Integer, db.ForeignKey('revisions.id'))
 
 
-class Futuremark3DMarkIcestormResult(db.Model):
-    __tablename__ = 'futuremark3dmarkicestormresults'
+class Futuremark3DMarkResult(db.Model):
+    __tablename__ = 'futuremark3dmarkresults'
     id = db.Column(db.Integer, primary_key=True)
     result_date = db.Column(db.DateTime, index=True, default=datetime.utcnow())
-    score = db.Column(db.Integer, index=True)
-    result_url = db.Column(db.String)
+    icestorm_score = db.Column(db.Integer, index=True)
+    icestorm_result_url = db.Column(db.String)
+    cloudgate_score = db.Column(db.Integer, index=True)
+    cloudgate_result_url = db.Column(db.String)
+    firestrike_score = db.Column(db.Integer, index=True)
+    firestrike_result_url = db.Column(db.String)
+    skydiver_score = db.Column(db.Integer, index=True)
+    skydiver_result_url = db.Column(db.String)
+    overall_result_url = db.Column(db.String)
     revision_id = db.Column(db.Integer, db.ForeignKey('revisions.id'))
