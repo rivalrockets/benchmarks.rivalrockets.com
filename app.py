@@ -389,7 +389,7 @@ class Futuremark3DMarkResultAPI(Resource):
         self.reqparse.add_argument('skydiver_score', type=int, location='json')
         self.reqparse.add_argument('skydiver_result_url', type=str, location='json')
         self.reqparse.add_argument('overall_result_url', type=str, location='json')
-        super(Futuremark3DMarkResultListAPI, self).__init__()
+        super(Futuremark3DMarkResultAPI, self).__init__()
 
     @marshal_with(futuremark3dmarkresult_fields, envelope='futuremark3dmarkresult')
     def get(self, id):
