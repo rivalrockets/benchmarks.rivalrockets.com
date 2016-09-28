@@ -25,7 +25,7 @@ def unauthorized():
 
 @app.errorhandler(400)
 def not_found(error):
-    return make_response(jsonify( { 'error': 'Bad request' } ), 400)
+    return make_response(jsonify({'error': 'Bad request'}), 400)
 
 
 @auth.verify_password
@@ -104,8 +104,8 @@ futuremark3dmarkresult_fields = {
 class UserAPI(Resource):
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
-        self.reqparse.add_argument('username', type = str, required = True, location = 'json')
-        self.reqparse.add_argument('password', type = str, required = True, location = 'json')
+        self.reqparse.add_argument('username', type=str, required=True, location='json')
+        self.reqparse.add_argument('password', type=str, required=True, location='json')
         super(UserAPI, self).__init__()
 
     @marshal_with(user_fields, envelope='user')
@@ -135,9 +135,10 @@ class TokenAPI(Resource):
 class MachineListAPI(Resource):
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
-        self.reqparse.add_argument('system_name', type = str, required = True, help = 'No machine name provided', location = 'json')
-        self.reqparse.add_argument('system_notes', type = str, default = "", location = 'json')
-        self.reqparse.add_argument('owner', type = str, default = "", location = 'json')
+        self.reqparse.add_argument('system_name', type=str, required=True, help='No machine name provided',
+                                   location='json')
+        self.reqparse.add_argument('system_notes', type=str, default="", location='json')
+        self.reqparse.add_argument('owner', type=str, default="", location='json')
         super(MachineListAPI, self).__init__()
 
     @marshal_with(machine_fields, envelope='machines')
@@ -149,7 +150,7 @@ class MachineListAPI(Resource):
     def post(self):
         args = self.reqparse.parse_args()
         machine = Machine(system_name=args['system_name'], system_notes=args['system_notes'], owner=args['owner'],
-                                            author_id=g.user.id) 
+                          author_id=g.user.id) 
 
         db.session.add(machine)
         db.session.commit()
@@ -159,9 +160,9 @@ class MachineListAPI(Resource):
 class MachineAPI(Resource):
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
-        self.reqparse.add_argument('system_name', type = str, location = 'json')
-        self.reqparse.add_argument('system_notes', type = str, location = 'json')
-        self.reqparse.add_argument('owner', type = str, location = 'json')
+        self.reqparse.add_argument('system_name', type=str, location='json')
+        self.reqparse.add_argument('system_notes', type=str, location='json')
+        self.reqparse.add_argument('owner', type=str, location='json')
         super(MachineAPI, self).__init__()
 
     @marshal_with(machine_fields, envelope='machine')
@@ -202,19 +203,19 @@ class RevisionListAPI(Resource):
 class RevisionAPI(Resource):
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
-        self.reqparse.add_argument('cpu_make', type = str, location = 'json')
-        self.reqparse.add_argument('cpu_name', type = str, location = 'json')
-        self.reqparse.add_argument('cpu_socket', type = str, location = 'json')
-        self.reqparse.add_argument('cpu_mhz', type = int, location = 'json')
-        self.reqparse.add_argument('cpu_proc_cores', type = int, location = 'json')
-        self.reqparse.add_argument('chipset', type = str, location = 'json')
-        self.reqparse.add_argument('system_memory_gb', type = int, location = 'json')
-        self.reqparse.add_argument('system_memory_mhz', type = int, location = 'json')
-        self.reqparse.add_argument('gpu_name', type = str, location = 'json')
-        self.reqparse.add_argument('gpu_make', type = str, location = 'json')
-        self.reqparse.add_argument('gpu_memory_mb', type = int, location = 'json')
-        self.reqparse.add_argument('revision_notes', type = str, location = 'json')
-        self.reqparse.add_argument('pcpartpicker_url', type = str, location = 'json')
+        self.reqparse.add_argument('cpu_make', type=str, location='json')
+        self.reqparse.add_argument('cpu_name', type=str, location='json')
+        self.reqparse.add_argument('cpu_socket', type=str, location='json')
+        self.reqparse.add_argument('cpu_mhz', type=int, location='json')
+        self.reqparse.add_argument('cpu_proc_cores', type=int, location='json')
+        self.reqparse.add_argument('chipset', type=str, location='json')
+        self.reqparse.add_argument('system_memory_gb', type=int, location='json')
+        self.reqparse.add_argument('system_memory_mhz', type=int, location='json')
+        self.reqparse.add_argument('gpu_name', type=str, location='json')
+        self.reqparse.add_argument('gpu_make', type=str, location='json')
+        self.reqparse.add_argument('gpu_memory_mb', type=int, location='json')
+        self.reqparse.add_argument('revision_notes', type=str, location='json')
+        self.reqparse.add_argument('pcpartpicker_url', type=str, location='json')
         super(RevisionAPI, self).__init__()
 
     @marshal_with(revision_fields, envelope='revision')
@@ -241,21 +242,21 @@ class RevisionAPI(Resource):
 
 class MachineRevisionListAPI(Resource):
     def __init__(self):
-        self.reqparse = reqparse.RequestParser()
-        self.reqparse.add_argument('cpu_make', type = str, location = 'json')
-        self.reqparse.add_argument('cpu_name', type = str, location = 'json')
-        self.reqparse.add_argument('cpu_socket', type = str, location = 'json')
-        self.reqparse.add_argument('cpu_mhz', type = int, location = 'json')
-        self.reqparse.add_argument('cpu_proc_cores', type = int, location = 'json')
-        self.reqparse.add_argument('chipset', type = str, location = 'json')
-        self.reqparse.add_argument('system_memory_gb', type = int, location = 'json')
-        self.reqparse.add_argument('system_memory_mhz', type = int, location = 'json')
-        self.reqparse.add_argument('gpu_name', type = str, location = 'json')
-        self.reqparse.add_argument('gpu_make', type = str, location = 'json')
+        self.reqparse=reqparse.RequestParser()
+        self.reqparse.add_argument('cpu_make', type=str, location='json')
+        self.reqparse.add_argument('cpu_name', type=str, location='json')
+        self.reqparse.add_argument('cpu_socket', type=str, location='json')
+        self.reqparse.add_argument('cpu_mhz', type=int, location='json')
+        self.reqparse.add_argument('cpu_proc_cores', type=int, location='json')
+        self.reqparse.add_argument('chipset', type=str, location='json')
+        self.reqparse.add_argument('system_memory_gb', type=int, location='json')
+        self.reqparse.add_argument('system_memory_mhz', type=int, location='json')
+        self.reqparse.add_argument('gpu_name', type=str, location='json')
+        self.reqparse.add_argument('gpu_make', type=str, location='json')
         self.reqparse.add_argument('gpu_count', type=str, location='json')
-        self.reqparse.add_argument('gpu_memory_mb', type = int, location = 'json')
-        self.reqparse.add_argument('revision_notes', type = str, location = 'json')
-        self.reqparse.add_argument('pcpartpicker_url', type = str, location = 'json')
+        self.reqparse.add_argument('gpu_memory_mb', type=int, location='json')
+        self.reqparse.add_argument('revision_notes', type=str, location='json')
+        self.reqparse.add_argument('pcpartpicker_url', type=str, location='json')
         super(MachineRevisionListAPI, self).__init__()
 
     @marshal_with(revision_fields, envelope='revisions')
@@ -472,11 +473,15 @@ api.add_resource(MachineRevisionListAPI, '/api/v1.0/machines/<int:id>/revisions'
 
 api.add_resource(CinebenchR15ResultListAPI, '/api/v1.0/cinebenchr15results', endpoint='cinebenchr15results')
 api.add_resource(CinebenchR15ResultAPI, '/api/v1.0/cinebenchr15results/<int:id>', endpoint='cinebenchr15result')
-api.add_resource(RevisionCinebenchR15ResultListAPI, '/api/v1.0/revisions/<int:id>/futuremark3dmarkresults', endpoint='revision_cinebenchr15results')
+api.add_resource(RevisionCinebenchR15ResultListAPI, '/api/v1.0/revisions/<int:id>/futuremark3dmarkresults',
+                 endpoint='revision_cinebenchr15results')
 
-api.add_resource(Futuremark3DMarkResultListAPI, '/api/v1.0/futuremark3dmarkresultsresults', endpoint='futuremark3dmarkresults')
-api.add_resource(Futuremark3DMarkResultAPI, '/api/v1.0/futuremark3dmarkresults/<int:id>', endpoint='futuremark3dmarkresult')
-api.add_resource(RevisionFuturemark3DMarkResultListAPI, '/api/v1.0/revisions/<int:id>/futuremark3dmarkresults', endpoint='revision_futuremark3dmarkresults')
+api.add_resource(Futuremark3DMarkResultListAPI, '/api/v1.0/futuremark3dmarkresultsresults',
+                 endpoint='futuremark3dmarkresults')
+api.add_resource(Futuremark3DMarkResultAPI, '/api/v1.0/futuremark3dmarkresults/<int:id>',
+                 endpoint='futuremark3dmarkresult')
+api.add_resource(RevisionFuturemark3DMarkResultListAPI, '/api/v1.0/revisions/<int:id>/futuremark3dmarkresults',
+                 endpoint='revision_futuremark3dmarkresults')
 
 
 if __name__ == '__main__':
