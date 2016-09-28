@@ -68,6 +68,7 @@ class Revision(db.Model):
     gpu_name = db.Column(db.String(64))
     gpu_make = db.Column(db.String(64))
     gpu_memory_mb = db.Column(db.Integer)
+    gpu_count = db.Column(db.Integer)
     revision_notes = db.Column(db.Text)
     revision_notes_html = db.Column(db.Text)
     pcpartpicker_url = db.Column(db.String)

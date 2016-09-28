@@ -252,6 +252,7 @@ class MachineRevisionListAPI(Resource):
         self.reqparse.add_argument('system_memory_mhz', type = int, location = 'json')
         self.reqparse.add_argument('gpu_name', type = str, location = 'json')
         self.reqparse.add_argument('gpu_make', type = str, location = 'json')
+        self.reqparse.add_argument('gpu_count', type=str, location='json')
         self.reqparse.add_argument('gpu_memory_mb', type = int, location = 'json')
         self.reqparse.add_argument('revision_notes', type = str, location = 'json')
         self.reqparse.add_argument('pcpartpicker_url', type = str, location = 'json')
@@ -280,6 +281,7 @@ class MachineRevisionListAPI(Resource):
             gpu_name=args['gpu_name'],
             gpu_make=args['gpu_make'],
             gpu_memory_mb=args['gpu_memory_mb'],
+            gpu_count=args['gpu_count'],
             revision_notes=args['revision_notes'],
             pcpartpicker_url=args['pcpartpicker_url'],
             author_id=g.user.id)
