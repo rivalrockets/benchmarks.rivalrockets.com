@@ -58,43 +58,43 @@ machine_fields = {
     'system_name': fields.String,
     'system_notes': fields.String,
     'owner': fields.String,
-    'active_revision_id': fields.Integer,
+    'active_revision_id': fields.Integer(default=None),
     'timestamp': fields.DateTime,
     'uri': fields.Url('machine', absolute=True),
-    'author_id': fields.Integer
+    'author_id': fields.Integer(default=None)
 }
 
 revision_fields = {
     'cpu_make': fields.String,
     'cpu_name': fields.String,
     'cpu_socket': fields.String,
-    'cpu_mhz': fields.Integer,
-    'cpu_proc_cores': fields.Integer,
+    'cpu_mhz': fields.Integer(default=None),
+    'cpu_proc_cores': fields.Integer(default=None),
     'chipset': fields.String,
-    'system_memory_mb': fields.Integer,
-    'system_memory_mhz': fields.Integer,
+    'system_memory_mb': fields.Integer(default=None),
+    'system_memory_mhz': fields.Integer(default=None),
     'gpu_name': fields.String,
     'gpu_make': fields.String,
-    'gpu_memory_gb': fields.Integer,
+    'gpu_memory_gb': fields.Integer(default=None),
     'revision_notes': fields.String,
     'revision_notes_html': fields.String,
     'pcpartpicker_url': fields.String,
     'timestamp': fields.DateTime,
-    'author_id': fields.Integer,
-    'machine_id': fields.Integer,
+    'author_id': fields.Integer(default=None),
+    'machine_id': fields.Integer(default=None),
     'uri': fields.Url('revision', absolute=True)
 }
 
 cinebenchr15result_fields = {
     'result_date': fields.DateTime,
-    'cpu_cb': fields.Integer,
-    'opengl_fps': fields.Integer,
+    'cpu_cb': fields.Integer(default=None),
+    'opengl_fps': fields.Integer(default=None),
     'uri': fields.Url('cinebenchr15result', absolute=True)
 }
 
 futuremark3dmarkresult_fields = {
     'result_date': fields.DateTime,
-    'score': fields.Integer,
+    'score': fields.Integer(default=None),
     'result_url': fields.String,
     'uri': fields.Url('futuremark3dmarkresult', absolute=True)
 }
