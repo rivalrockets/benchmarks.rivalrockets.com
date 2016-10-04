@@ -94,8 +94,15 @@ cinebenchr15result_fields = {
 
 futuremark3dmarkresult_fields = {
     'result_date': fields.DateTime,
-    'score': fields.Integer(default=None),
-    'result_url': fields.String,
+    'icestorm_score': fields.Integer(default=None),
+    'icestorm_result_url': fields.String,
+    'cloudgate_score': fields.Integer(default=None),
+    'cloudgate_result_url': fields.String,
+    'firestrike_score': fields.Integer(default=None),
+    'firestrike_result_url': fields.String,
+    'skydiver_score': fields.Integer(default=None),
+    'skydiver_result_url': fields.String,
+    'overall_result_url': fields.String,
     'uri': fields.Url('futuremark3dmarkresult', absolute=True)
 }
 
@@ -473,7 +480,7 @@ api.add_resource(MachineRevisionListAPI, '/api/v1.0/machines/<int:id>/revisions'
 
 api.add_resource(CinebenchR15ResultListAPI, '/api/v1.0/cinebenchr15results', endpoint='cinebenchr15results')
 api.add_resource(CinebenchR15ResultAPI, '/api/v1.0/cinebenchr15results/<int:id>', endpoint='cinebenchr15result')
-api.add_resource(RevisionCinebenchR15ResultListAPI, '/api/v1.0/revisions/<int:id>/futuremark3dmarkresults',
+api.add_resource(RevisionCinebenchR15ResultListAPI, '/api/v1.0/revisions/<int:id>/cinebenchr15results',
                  endpoint='revision_cinebenchr15results')
 
 api.add_resource(Futuremark3DMarkResultListAPI, '/api/v1.0/futuremark3dmarkresultsresults',
