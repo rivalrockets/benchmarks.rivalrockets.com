@@ -4,10 +4,16 @@ from flask import Flask, jsonify, abort, g, url_for, make_response
 from flask_httpauth import HTTPBasicAuth
 from flask_restful import Api, Resource, reqparse, fields, marshal_with
 from models import User, Machine, Revision, CinebenchR15Result, Futuremark3DMarkResult, db
+from config import config
 
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 app = Flask(__name__)
+
+config_name = 'development'
+app.config.from_object(config[config_name])
+config[config_name].init_app(app)
+
 auth = HTTPBasicAuth()
 api = Api(app)
 
@@ -40,10 +46,6 @@ def verify_password(username_or_token, password):
     g.user = user
     return True
 
-
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'data.sqlite')
-app.config['SQLALCHEMY_COMMIT_ON_TEARDOWN'] = True
-app.config['SECRET_KEY'] = 'quincy the kumquat queried the queen'
 
 db.init_app(app)
 
