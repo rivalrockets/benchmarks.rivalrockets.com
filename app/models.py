@@ -7,7 +7,7 @@ from itsdangerous import (TimedJSONWebSignatureSerializer
 # per http://stackoverflow.com/a/9695045
 from flask_sqlalchemy import SQLAlchemy
 
-db = SQLAlchemy()
+from . import db
 
 
 class User(db.Model):

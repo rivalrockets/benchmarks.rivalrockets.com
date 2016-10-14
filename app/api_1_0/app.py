@@ -1,24 +1,19 @@
 #!flask/bin/python
 import os
-from flask import Flask, jsonify, abort, g, url_for, make_response
+
+from flask import current_app, jsonify, g, make_response
 from flask_httpauth import HTTPBasicAuth
 from flask_restful import Api, Resource, reqparse, fields, marshal_with
-from models import User, Machine, Revision, CinebenchR15Result, Futuremark3DMarkResult, db
-from config import config
-
+from . import api_blueprint
+from app.models import User, Machine, Revision, CinebenchR15Result, Futuremark3DMarkResult, db
 
 basedir = os.path.abspath(os.path.dirname(__file__))
-app = Flask(__name__)
-
-config_name = 'development'
-app.config.from_object(config[config_name])
-config[config_name].init_app(app)
 
 auth = HTTPBasicAuth()
-api = Api(app)
+api = Api(api_blueprint)
 
 
-@app.errorhandler(404)
+@api_blueprint.errorhandler(404)
 def not_found(error):
     return make_response(jsonify({'error': 'Not found'}), 404)
 
@@ -29,7 +24,7 @@ def unauthorized():
     # return 403 instead of 401 to prevent browsers from displaying the default auth dialog
 
 
-@app.errorhandler(400)
+@api_blueprint.errorhandler(400)
 def not_found(error):
     return make_response(jsonify({'error': 'Bad request'}), 400)
 
@@ -47,13 +42,11 @@ def verify_password(username_or_token, password):
     return True
 
 
-db.init_app(app)
-
 # flask_restful fields usage:
 # note that the 'Url' field type takes the 'endpoint' for the arg
 user_fields = {
     'username': fields.String,
-    'uri': fields.Url('user', absolute=True)
+    'uri': fields.Url('.user', absolute=True)
 }
 
 machine_fields = {
@@ -62,7 +55,7 @@ machine_fields = {
     'owner': fields.String,
     'active_revision_id': fields.Integer(default=None),
     'timestamp': fields.DateTime,
-    'uri': fields.Url('machine', absolute=True),
+    'uri': fields.Url('.machine', absolute=True),
     'author_id': fields.Integer(default=None)
 }
 
@@ -84,14 +77,14 @@ revision_fields = {
     'timestamp': fields.DateTime,
     'author_id': fields.Integer(default=None),
     'machine_id': fields.Integer(default=None),
-    'uri': fields.Url('revision', absolute=True)
+    'uri': fields.Url('.revision', absolute=True)
 }
 
 cinebenchr15result_fields = {
     'result_date': fields.DateTime,
     'cpu_cb': fields.Integer(default=None),
     'opengl_fps': fields.Integer(default=None),
-    'uri': fields.Url('cinebenchr15result', absolute=True)
+    'uri': fields.Url('.cinebenchr15result', absolute=True)
 }
 
 futuremark3dmarkresult_fields = {
@@ -105,7 +98,7 @@ futuremark3dmarkresult_fields = {
     'skydiver_score': fields.Integer(default=None),
     'skydiver_result_url': fields.String,
     'overall_result_url': fields.String,
-    'uri': fields.Url('futuremark3dmarkresult', absolute=True)
+    'uri': fields.Url('.futuremark3dmarkresult', absolute=True)
 }
 
 
@@ -491,10 +484,3 @@ api.add_resource(Futuremark3DMarkResultAPI, '/api/v1.0/futuremark3dmarkresults/<
                  endpoint='futuremark3dmarkresult')
 api.add_resource(RevisionFuturemark3DMarkResultListAPI, '/api/v1.0/revisions/<int:id>/futuremark3dmarkresults',
                  endpoint='revision_futuremark3dmarkresults')
-
-
-if __name__ == '__main__':
-    # http://stackoverflow.com/a/19008403
-    with app.app_context():
-        db.create_all()
-    app.run(debug=True)
