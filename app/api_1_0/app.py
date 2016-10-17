@@ -5,14 +5,13 @@ from ..api_1_0.resources.users import UserAPI
 from ..api_1_0.resources.authentication import TokenAPI
 from ..api_1_0.resources.machines import MachineAPI, MachineListAPI
 from ..api_1_0.resources.revisions import RevisionAPI, RevisionListAPI, MachineRevisionListAPI
-from ..api_1_0.resources.cinebenchr15results import CinebenchR15ResultAPI, CinebenchR15ResultListAPI, RevisionCinebenchR15ResultListAPI
-from ..api_1_0.resources.futuremark3dmarkresults import Futuremark3DMarkResultAPI, Futuremark3DMarkResultListAPI, RevisionFuturemark3DMarkResultListAPI
+from ..api_1_0.resources.cinebenchr15results import \
+                CinebenchR15ResultAPI, CinebenchR15ResultListAPI, RevisionCinebenchR15ResultListAPI
+from ..api_1_0.resources.futuremark3dmarkresults import \
+                Futuremark3DMarkResultAPI, Futuremark3DMarkResultListAPI, RevisionFuturemark3DMarkResultListAPI
 
-
-basedir = os.path.abspath(os.path.dirname(__file__))
 
 api = Api(api_blueprint)
-
 
 api.add_resource(UserAPI, '/users', endpoint='users')
 api.add_resource(UserAPI, '/users/<int:id>', endpoint='user')
