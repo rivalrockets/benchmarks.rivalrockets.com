@@ -19,6 +19,6 @@ def create_app(config_name):
     # This is where the routes would be registered, blueprints are ideal.
 
     from .api_1_0 import api_blueprint as api_1_0_blueprint
-    app.register_blueprint(api_1_0_blueprint)
+    app.register_blueprint(api_1_0_blueprint, url_prefix='/api/v1.0')
 
     return app
