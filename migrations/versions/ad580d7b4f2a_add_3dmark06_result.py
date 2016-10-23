@@ -1,13 +1,13 @@
 """Add 3DMark06 Result
 
-Revision ID: f934daffa561
+Revision ID: ad580d7b4f2a
 Revises: 0959737bcdfd
-Create Date: 2016-10-22 09:31:28.284912
+Create Date: 2016-10-23 13:47:14.849821
 
 """
 
 # revision identifiers, used by Alembic.
-revision = 'f934daffa561'
+revision = 'ad580d7b4f2a'
 down_revision = '0959737bcdfd'
 
 from alembic import op
@@ -22,12 +22,12 @@ def upgrade():
     sa.Column('sm2_score', sa.Integer(), nullable=True),
     sa.Column('cpu_score', sa.Integer(), nullable=True),
     sa.Column('sm3_score', sa.Integer(), nullable=True),
-    sa.Column('proxcyon_fps', sa.Numeric(precision=3, scale=2), nullable=True),
-    sa.Column('fireflyforest_fps', sa.Numeric(precision=3, scale=2), nullable=True),
-    sa.Column('cpu1_fps', sa.Numeric(precision=3, scale=2), nullable=True),
-    sa.Column('cpu2_fps', sa.Numeric(precision=3, scale=2), nullable=True),
-    sa.Column('canyonflight_fps', sa.Numeric(precision=3, scale=2), nullable=True),
-    sa.Column('deepfreeze_fps', sa.Numeric(precision=3, scale=2), nullable=True),
+    sa.Column('proxcyon_fps', sa.Numeric(precision=5, scale=2), nullable=True),
+    sa.Column('fireflyforest_fps', sa.Numeric(precision=5, scale=2), nullable=True),
+    sa.Column('cpu1_fps', sa.Numeric(precision=5, scale=2), nullable=True),
+    sa.Column('cpu2_fps', sa.Numeric(precision=5, scale=2), nullable=True),
+    sa.Column('canyonflight_fps', sa.Numeric(precision=5, scale=2), nullable=True),
+    sa.Column('deepfreeze_fps', sa.Numeric(precision=5, scale=2), nullable=True),
     sa.Column('overall_score', sa.Integer(), nullable=True),
     sa.Column('result_url', sa.String(), nullable=True),
     sa.Column('revision_id', sa.Integer(), nullable=True),
