@@ -77,6 +77,8 @@ class Revision(db.Model):
     machine_id = db.Column(db.Integer, db.ForeignKey('machines.id'))
 
     cinebenchr15results = db.relationship('CinebenchR15Result', backref='revisions', lazy='dynamic')
+    futuremark3dmark06results = db.relationship('Futuremark3DMark06Result', backref='revisions',
+                                                      lazy='dynamic')
     futuremark3dmarkresults = db.relationship('Futuremark3DMarkResult', backref='revisions',
                                                       lazy='dynamic')
 
@@ -87,6 +89,24 @@ class CinebenchR15Result(db.Model):
     result_date = db.Column(db.DateTime, index=True, default=datetime.utcnow())
     cpu_cb = db.Column(db.Integer, index=True)
     opengl_fps = db.Column(db.Integer, index=True)
+    revision_id = db.Column(db.Integer, db.ForeignKey('revisions.id'))
+
+
+class Futuremark3DMark06Result(db.Model):
+    __tablename__ = 'futuremark3dmark06results'
+    id = db.Column(db.Integer, primary_key=True)
+    result_date = db.Column(db.DateTime, index=True, default=datetime.utcnow())
+    sm2_score = db.Column(db.Integer, index=True)
+    cpu_score = db.Column(db.Integer, index=True)
+    sm3_score = db.Column(db.Integer, index=True)
+    proxcyon_fps = db.Column(db.Numeric(3,2))
+    fireflyforest_fps = db.Column(db.Numeric(3,2))
+    cpu1_fps = db.Column(db.Numeric(3,2))
+    cpu2_fps = db.Column(db.Numeric(3,2))
+    canyonflight_fps = db.Column(db.Numeric(3,2))
+    deepfreeze_fps = db.Column(db.Numeric(3,2))
+    overall_score = db.Column(db.Integer, index=True)
+    result_url = db.Column(db.String)
     revision_id = db.Column(db.Integer, db.ForeignKey('revisions.id'))
 
 
