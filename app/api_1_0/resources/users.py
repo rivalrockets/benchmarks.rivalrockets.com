@@ -11,6 +11,18 @@ user_fields = {
 }
 
 
+# List of users
+class UserListAPI(Resource):
+    def __init__(self):
+        self.reqparse = reqparse.RequestParser()
+        self.reqparse.add_argument('username', type=str, required=True, location='json')
+        self.reqparse.add_argument('password', type=str, required=True, location='json')
+        super(UserListAPI, self).__init__()
+    @marshal_with(user_fields, envelope='users')
+    def get(self):
+        return User.query.all()
+
+
 # New user API class
 class UserAPI(Resource):
     def __init__(self):
