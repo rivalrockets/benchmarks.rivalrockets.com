@@ -69,4 +69,4 @@ class UserAPI(Resource):
             db.session.commit()
             return user, 201
         else:
-            return 403
+            return user, 403

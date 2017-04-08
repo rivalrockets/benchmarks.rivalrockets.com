@@ -10,3 +10,8 @@ def not_found(error):
 @api_blueprint.errorhandler(400)
 def not_found(error):
     return make_response(jsonify({'error': 'Bad request'}), 400)
+
+
+@api_blueprint.errorhandler(500)
+def not_found(error):
+    return make_response(jsonify({'error': 'Error'}), 500)
