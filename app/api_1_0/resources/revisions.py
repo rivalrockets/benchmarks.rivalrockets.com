@@ -121,13 +121,13 @@ class MachineRevisionListAPI(Resource):
             pcpartpicker_url=args['pcpartpicker_url'],
             author_id=g.user.id)
 
-        # Why doesn't this work?
-        #revision.machine = machine
-        # Instead, I'm doing this:
-        revision.machine_id = machine.id
+        machine.revisions.append(revision)
 
-        #TODO: set the Machine.active_revision_id to this revision
-
-        db.session.add(revision)
+        # commit once to get the id of the revision
         db.session.commit()
+        # set the Machine.active_revision_id to this revision
+        machine.active_revision_id = revision.id
+        # commit again to save the new active_revision_id
+        db.session.commit()
+
         return revision, 201
