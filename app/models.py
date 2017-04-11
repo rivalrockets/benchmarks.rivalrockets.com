@@ -51,7 +51,8 @@ class Machine(db.Model):
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
     author_id = db.Column(db.Integer, db.ForeignKey('users.id'))
 
-    revisions = db.relationship('Revision', backref='machines', lazy='dynamic')
+    active_revision = db.relationship('Revision', backref='active_revision_of', uselist=False)
+    revisions = db.relationship('Revision', backref='machine', lazy='dynamic')
 
 
 class Revision(db.Model):
@@ -76,10 +77,10 @@ class Revision(db.Model):
     author_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     machine_id = db.Column(db.Integer, db.ForeignKey('machines.id'))
 
-    cinebenchr15results = db.relationship('CinebenchR15Result', backref='revisions', lazy='dynamic')
-    futuremark3dmark06results = db.relationship('Futuremark3DMark06Result', backref='revisions',
+    cinebenchr15results = db.relationship('CinebenchR15Result', backref='revision', lazy='dynamic')
+    futuremark3dmark06results = db.relationship('Futuremark3DMark06Result', backref='revision',
                                                       lazy='dynamic')
-    futuremark3dmarkresults = db.relationship('Futuremark3DMarkResult', backref='revisions',
+    futuremark3dmarkresults = db.relationship('Futuremark3DMarkResult', backref='revision',
                                                       lazy='dynamic')
 
 
