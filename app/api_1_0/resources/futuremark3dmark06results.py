@@ -5,7 +5,7 @@ from ...models import Revision, Futuremark3DMark06Result
 
 
 futuremark3dmark06result_fields = {
-    'result_date': fields.DateTime,
+    'result_date': fields.DateTime(dt_format='iso8601'),
     'sm2_score': fields.Integer(default=None),
     'cpu_score': fields.Integer(default=None),
     'sm3_score': fields.Integer(default=None),
@@ -46,10 +46,6 @@ class Futuremark3DMark06ResultAPI(Resource):
         super(Futuremark3DMark06ResultAPI, self).__init__()
 
     @marshal_with(futuremark3dmark06result_fields, envelope='futuremark3dmark06result')
-    def get(self, id):
-        return Futuremark3DMark06Result.query.get_or_404(id)
-
-    @auth.login_required
     def get(self, id):
         return Futuremark3DMark06Result.query.get_or_404(id)
 

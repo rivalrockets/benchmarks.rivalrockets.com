@@ -3,7 +3,7 @@ from flask_restful import Resource, reqparse, fields, marshal_with
 from .authentication import auth
 from .machines import machine_fields
 from ... import db
-from ...models import User, Machine
+from ...models import User
 
 
 # flask_restful fields usage:
@@ -11,7 +11,7 @@ from ...models import User, Machine
 user_fields = {
     'username': fields.String,
     'uri': fields.Url('.user', absolute=True),
-    'last_seen': fields.DateTime(dt_format='rfc822'),
+    'last_seen': fields.DateTime(dt_format='iso8601'),
     'machines': fields.List(fields.Nested(machine_fields))
 }
 
@@ -26,7 +26,7 @@ class UserListAPI(Resource):
 
     @marshal_with(user_fields, envelope='users')
     def get(self):
-        return User.query.outerjoin(User.machines).all()
+        return User.query.all()
 
     @marshal_with(user_fields, envelope='user')
     def post(self):

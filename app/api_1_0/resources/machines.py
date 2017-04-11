@@ -1,6 +1,7 @@
 from flask import g
 from flask_restful import Resource, reqparse, fields, marshal_with
 from .authentication import auth
+from .revisions import revision_fields
 from ... import db
 from ...models import Machine
 
@@ -10,9 +11,10 @@ machine_fields = {
     'system_notes': fields.String,
     'owner': fields.String,
     'active_revision_id': fields.Integer(default=None),
-    'timestamp': fields.DateTime,
+    'timestamp': fields.DateTime(dt_format='iso8601'),
     'uri': fields.Url('.machine', absolute=True),
-    'author_id': fields.Integer(default=None)
+    'author_id': fields.Integer(default=None),
+    'revisions': fields.List(fields.Nested(revision_fields))
 }
 
 

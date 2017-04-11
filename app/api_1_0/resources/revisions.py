@@ -1,6 +1,9 @@
 from flask import g
 from flask_restful import Resource, reqparse, fields, marshal_with
 from .authentication import auth
+from .cinebenchr15results import cinebenchr15result_fields
+from .futuremark3dmark06results import futuremark3dmark06result_fields
+from .futuremark3dmarkresults import futuremark3dmarkresult_fields
 from ... import db
 from ...models import Machine, Revision
 
@@ -20,10 +23,13 @@ revision_fields = {
     'revision_notes': fields.String,
     'revision_notes_html': fields.String,
     'pcpartpicker_url': fields.String,
-    'timestamp': fields.DateTime,
+    'timestamp': fields.DateTime(dt_format='iso8601'),
     'author_id': fields.Integer(default=None),
     'machine_id': fields.Integer(default=None),
-    'uri': fields.Url('.revision', absolute=True)
+    'uri': fields.Url('.revision', absolute=True),
+    'cinebenchr15results': fields.List(fields.Nested(cinebenchr15result_fields)),
+    'futuremark3dmark06results': fields.List(fields.Nested(futuremark3dmark06result_fields)),
+    'futuremark3dmarkresults': fields.List(fields.Nested(futuremark3dmarkresult_fields))
 }
 
 

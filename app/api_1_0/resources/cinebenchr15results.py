@@ -6,7 +6,7 @@ from ...models import Revision, CinebenchR15Result
 
 
 cinebenchr15result_fields = {
-    'result_date': fields.DateTime,
+    'result_date': fields.DateTime(dt_format='iso8601'),
     'cpu_cb': fields.Integer(default=None),
     'opengl_fps': fields.Integer(default=None),
     'uri': fields.Url('.cinebenchr15result', absolute=True)

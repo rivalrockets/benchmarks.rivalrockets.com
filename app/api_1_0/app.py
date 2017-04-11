@@ -27,13 +27,13 @@ api.add_resource(CinebenchR15ResultListAPI, '/cinebenchr15results', endpoint='ci
 api.add_resource(CinebenchR15ResultAPI, '/cinebenchr15results/<int:id>', endpoint='cinebenchr15result')
 api.add_resource(RevisionCinebenchR15ResultListAPI, '/revisions/<int:id>/cinebenchr15results',
                  endpoint='revision_cinebenchr15results')
-api.add_resource(Futuremark3DMark06ResultListAPI, '/futuremark3dmark06resultsresults',
+api.add_resource(Futuremark3DMark06ResultListAPI, '/futuremark3dmark06results',
                  endpoint='futuremark3dmark06results')
 api.add_resource(Futuremark3DMark06ResultAPI, '/futuremark3dmark06results/<int:id>',
                  endpoint='futuremark3dmark06result')
 api.add_resource(RevisionFuturemark3DMark06ResultListAPI, '/revisions/<int:id>/futuremark3dmark06results',
                  endpoint='revision_futuremark3dmark06results')
-api.add_resource(Futuremark3DMarkResultListAPI, '/futuremark3dmarkresultsresults',
+api.add_resource(Futuremark3DMarkResultListAPI, '/futuremark3dmarkresults',
                  endpoint='futuremark3dmarkresults')
 api.add_resource(Futuremark3DMarkResultAPI, '/futuremark3dmarkresults/<int:id>',
                  endpoint='futuremark3dmarkresult')

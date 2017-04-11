@@ -5,7 +5,7 @@ from ...models import Revision, Futuremark3DMarkResult
 
 
 futuremark3dmarkresult_fields = {
-    'result_date': fields.DateTime,
+    'result_date': fields.DateTime(dt_format='iso8601'),
     'icestorm_score': fields.Integer(default=None),
     'icestorm_result_url': fields.String,
     'cloudgate_score': fields.Integer(default=None),
