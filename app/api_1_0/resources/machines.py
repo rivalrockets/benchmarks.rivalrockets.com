@@ -4,6 +4,7 @@ from .authentication import auth
 from .revisions import revision_fields
 from ... import db
 from ...models import Machine
+import dateutil.parser
 
 
 machine_fields = {
@@ -22,10 +23,15 @@ machine_fields = {
 class MachineListAPI(Resource):
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
-        self.reqparse.add_argument('system_name', type=str, required=True, help='No machine name provided',
+        self.reqparse.add_argument('system_name', type=str, required=True,
+                                   help='No machine name provided',
                                    location='json')
-        self.reqparse.add_argument('system_notes', type=str, default="", location='json')
-        self.reqparse.add_argument('owner', type=str, default="", location='json')
+        self.reqparse.add_argument('system_notes', type=str, default="",
+                                   location='json')
+        self.reqparse.add_argument('owner', type=str, default="",
+                                   location='json')
+        self.reqparse.add_argument('timestamp', type=str,
+                                   location='json')
         super(MachineListAPI, self).__init__()
 
     @marshal_with(machine_fields, envelope='machines')
@@ -36,8 +42,18 @@ class MachineListAPI(Resource):
     @marshal_with(machine_fields, envelope='machine')
     def post(self):
         args = self.reqparse.parse_args()
-        machine = Machine(system_name=args['system_name'], system_notes=args['system_notes'], owner=args['owner'],
-                          author_id=g.user.id)
+
+        # parse the timestamp provided
+        try:
+            ts = dateutil.parser.parse(args['timestamp'])
+        except TypeError:
+            ts = None # none will use the model's default (current time)
+
+        machine = Machine(system_name=args['system_name'], 
+                            system_notes=args['system_notes'],
+                            owner=args['owner'],
+                            timestamp=ts,
+                            author_id=g.user.id)
 
         db.session.add(machine)
         db.session.commit()

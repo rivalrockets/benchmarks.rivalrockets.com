@@ -6,6 +6,7 @@ from .futuremark3dmark06results import futuremark3dmark06result_fields
 from .futuremark3dmarkresults import futuremark3dmarkresult_fields
 from ... import db
 from ...models import Machine, Revision
+import dateutil.parser
 
 
 revision_fields = {
@@ -33,7 +34,7 @@ revision_fields = {
 }
 
 
-# global revision list... might be better to have a per-machine revision list only.
+# global revision list
 class RevisionListAPI(Resource):
     @marshal_with(revision_fields, envelope='revisions')
     def get(self):
@@ -49,13 +50,18 @@ class RevisionAPI(Resource):
         self.reqparse.add_argument('cpu_mhz', type=int, location='json')
         self.reqparse.add_argument('cpu_proc_cores', type=int, location='json')
         self.reqparse.add_argument('chipset', type=str, location='json')
-        self.reqparse.add_argument('system_memory_gb', type=int, location='json')
-        self.reqparse.add_argument('system_memory_mhz', type=int, location='json')
+        self.reqparse.add_argument('system_memory_gb', type=int,
+                                   location='json')
+        self.reqparse.add_argument('system_memory_mhz', type=int,
+                                   location='json')
         self.reqparse.add_argument('gpu_name', type=str, location='json')
         self.reqparse.add_argument('gpu_make', type=str, location='json')
         self.reqparse.add_argument('gpu_memory_mb', type=int, location='json')
         self.reqparse.add_argument('revision_notes', type=str, location='json')
-        self.reqparse.add_argument('pcpartpicker_url', type=str, location='json')
+        self.reqparse.add_argument('pcpartpicker_url', type=str,
+                                   location='json')
+        self.reqparse.add_argument('timestamp', type=str,
+                                   location='json')
         super(RevisionAPI, self).__init__()
 
     @marshal_with(revision_fields, envelope='revision')
@@ -89,14 +95,19 @@ class MachineRevisionListAPI(Resource):
         self.reqparse.add_argument('cpu_mhz', type=int, location='json')
         self.reqparse.add_argument('cpu_proc_cores', type=int, location='json')
         self.reqparse.add_argument('chipset', type=str, location='json')
-        self.reqparse.add_argument('system_memory_gb', type=int, location='json')
-        self.reqparse.add_argument('system_memory_mhz', type=int, location='json')
+        self.reqparse.add_argument('system_memory_gb', type=int,
+                                   location='json')
+        self.reqparse.add_argument('system_memory_mhz', type=int,
+                                   location='json')
         self.reqparse.add_argument('gpu_name', type=str, location='json')
         self.reqparse.add_argument('gpu_make', type=str, location='json')
         self.reqparse.add_argument('gpu_count', type=str, location='json')
         self.reqparse.add_argument('gpu_memory_mb', type=int, location='json')
         self.reqparse.add_argument('revision_notes', type=str, location='json')
-        self.reqparse.add_argument('pcpartpicker_url', type=str, location='json')
+        self.reqparse.add_argument('pcpartpicker_url', type=str,
+                                   location='json')
+        self.reqparse.add_argument('timestamp', type=str,
+                                   location='json')
         super(MachineRevisionListAPI, self).__init__()
 
     @marshal_with(revision_fields, envelope='revisions')
@@ -108,6 +119,13 @@ class MachineRevisionListAPI(Resource):
     @marshal_with(revision_fields, envelope='revision')
     def post(self, id):
         args = self.reqparse.parse_args()
+
+        # parse the timestamp provided
+        try:
+            ts = dateutil.parser.parse(args['timestamp'])
+        except TypeError:
+            ts = None # none will use the model's default (current time)
+
         machine = Machine.query.get_or_404(id)
 
         revision = Revision(
@@ -125,6 +143,7 @@ class MachineRevisionListAPI(Resource):
             gpu_count=args['gpu_count'],
             revision_notes=args['revision_notes'],
             pcpartpicker_url=args['pcpartpicker_url'],
+            timestamp=ts,
             author_id=g.user.id)
 
         machine.revisions.append(revision)
