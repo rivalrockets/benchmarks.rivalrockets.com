@@ -16,7 +16,7 @@ revision_fields = {
     'cpu_mhz': fields.Integer(default=None),
     'cpu_proc_cores': fields.Integer(default=None),
     'chipset': fields.String,
-    'system_memory_mb': fields.Integer(default=None),
+    'system_memory_gb': fields.Integer(default=None),
     'system_memory_mhz': fields.Integer(default=None),
     'gpu_name': fields.String,
     'gpu_make': fields.String,
@@ -73,9 +73,18 @@ class RevisionAPI(Resource):
     def put(self, id):
         revision = Revision.query.get_or_404(id)
         args = self.reqparse.parse_args()
+
         for k, v in args.items():
             if v is not None:
-                setattr(revision, k, v)
+                # this code smells of elderberries
+                if k == 'timestamp':
+                    try:
+                        ts = dateutil.parser.parse(args['timestamp'])
+                        setattr(machine, k, ts)
+                    except TypeError:
+                        pass
+                else:
+                    setattr(revision, k, v)
         db.session.commit()
         return revision
 

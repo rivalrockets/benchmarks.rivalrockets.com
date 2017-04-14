@@ -66,6 +66,8 @@ class MachineAPI(Resource):
         self.reqparse.add_argument('system_name', type=str, location='json')
         self.reqparse.add_argument('system_notes', type=str, location='json')
         self.reqparse.add_argument('owner', type=str, location='json')
+        self.reqparse.add_argument('timestamp', type=str,
+                                   location='json')
         super(MachineAPI, self).__init__()
 
     @marshal_with(machine_fields, envelope='machine')
@@ -82,9 +84,19 @@ class MachineAPI(Resource):
         # since the SQLAlchemy machine object does not support item
         # assignment, let's use some setattr func
         args = self.reqparse.parse_args()
+
         for k, v in args.items():
             if v is not None:
-                setattr(machine, k, v)
+                # this is a hack because I couldn't get a built-in datetime parser
+                # to work. This is bad and you should feel bad for reading it.
+                if k == 'timestamp':
+                    try:
+                        ts = dateutil.parser.parse(args['timestamp'])
+                        setattr(machine, k, ts)
+                    except TypeError:
+                        pass
+                else:
+                    setattr(machine, k, v)
         # autocommit? This doesn't appear to be necessary---leaving in for now.
         db.session.commit()
         return machine
