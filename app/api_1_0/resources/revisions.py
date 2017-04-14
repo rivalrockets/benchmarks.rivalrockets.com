@@ -80,7 +80,7 @@ class RevisionAPI(Resource):
                 if k == 'timestamp':
                     try:
                         ts = dateutil.parser.parse(args['timestamp'])
-                        setattr(machine, k, ts)
+                        setattr(revision, k, ts)
                     except TypeError:
                         pass
                 else:
