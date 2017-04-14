@@ -44,10 +44,9 @@ class MachineListAPI(Resource):
         args = self.reqparse.parse_args()
 
         # parse the timestamp provided
-        try:
+        ts = None # set to none if not provided next
+        if args['timestamp'] is not None:
             ts = dateutil.parser.parse(args['timestamp'])
-        except TypeError:
-            ts = None # none will use the model's default (current time)
 
         machine = Machine(system_name=args['system_name'], 
                             system_notes=args['system_notes'],
@@ -90,11 +89,7 @@ class MachineAPI(Resource):
                 # this is a hack because I couldn't get a built-in datetime parser
                 # to work. This is bad and you should feel bad for reading it.
                 if k == 'timestamp':
-                    try:
-                        ts = dateutil.parser.parse(args['timestamp'])
-                        setattr(machine, k, ts)
-                    except TypeError:
-                        pass
+                    setattr(machine, k, dateutil.parser.parse(v))
                 else:
                     setattr(machine, k, v)
         # autocommit? This doesn't appear to be necessary---leaving in for now.

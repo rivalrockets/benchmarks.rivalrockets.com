@@ -78,11 +78,7 @@ class RevisionAPI(Resource):
             if v is not None:
                 # this code smells of elderberries
                 if k == 'timestamp':
-                    try:
-                        ts = dateutil.parser.parse(args['timestamp'])
-                        setattr(revision, k, ts)
-                    except TypeError:
-                        pass
+                    setattr(revision, k, dateutil.parser.parse(v))
                 else:
                     setattr(revision, k, v)
         db.session.commit()
