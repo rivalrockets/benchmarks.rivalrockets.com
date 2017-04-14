@@ -3,6 +3,7 @@ from flask_restful import Resource, reqparse, fields, marshal_with
 from ..resources.authentication import auth
 from ... import db
 from ...models import Revision, CinebenchR15Result
+import dateutil.parser
 
 
 cinebenchr15result_fields = {
@@ -42,7 +43,11 @@ class CinebenchR15ResultAPI(Resource):
         args = self.reqparse.parse_args()
         for k, v in args.items():
             if v is not None:
-                setattr(cinebenchr15result, k, v)
+                # *sniff* you smell that?
+                if k == 'result_date':
+                    setattr(cinebenchr15result, k, dateutil.parser.parse(v))
+                else:
+                    setattr(cinebenchr15result, k, v)
         db.session.commit()
         return cinebenchr15result
 
@@ -70,10 +75,16 @@ class RevisionCinebenchR15ResultListAPI(Resource):
     @marshal_with(cinebenchr15result_fields, envelope='cinebenchr15result')
     def post(self, id):
         args = self.reqparse.parse_args()
+
+        # parse the timestamp provided
+        rd = None
+        if args['result_date'] is not None:
+            rd = dateutil.parser.parse(args['result_date'])
+
         revision = Revision.query.get_or_404(id)
 
         cinebenchr15result = CinebenchR15Result(
-            result_date=args['result_date'],
+            result_date=rd,
             cpu_cb=args['cpu_cb'],
             opengl_fps=args['opengl_fps'])
 
