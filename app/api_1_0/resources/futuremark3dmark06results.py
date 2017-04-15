@@ -2,6 +2,7 @@ from flask_restful import Api, Resource, reqparse, fields, marshal_with
 from ..resources.authentication import auth
 from ... import db
 from ...models import Revision, Futuremark3DMark06Result
+from dateutil import parser
 
 
 futuremark3dmark06result_fields = {
@@ -23,7 +24,8 @@ futuremark3dmark06result_fields = {
 
 
 class Futuremark3DMark06ResultListAPI(Resource):
-    @marshal_with(futuremark3dmark06result_fields, envelope='futuremark3dmark06results')
+    @marshal_with(futuremark3dmark06result_fields,
+                  envelope='futuremark3dmark06results')
     def get(self):
         return Futuremark3DMark06Result.query.all()
 
@@ -36,33 +38,42 @@ class Futuremark3DMark06ResultAPI(Resource):
         self.reqparse.add_argument('cpu_score', type=str, location='json')
         self.reqparse.add_argument('sm3_score', type=int, location='json')
         self.reqparse.add_argument('proxcyon_fps', type=str, location='json')
-        self.reqparse.add_argument('fireflyforest_fps', type=int, location='json')
+        self.reqparse.add_argument('fireflyforest_fps', type=int,
+                                   location='json')
         self.reqparse.add_argument('cpu1_fps', type=str, location='json')
         self.reqparse.add_argument('cpu2_fps', type=int, location='json')
-        self.reqparse.add_argument('canyonflight_fps', type=str, location='json')
+        self.reqparse.add_argument('canyonflight_fps', type=str,
+                                   location='json')
         self.reqparse.add_argument('deepfreeze_fps', type=str, location='json')
         self.reqparse.add_argument('overall_score', type=str, location='json')
         self.reqparse.add_argument('result_url', type=str, location='json')
         super(Futuremark3DMark06ResultAPI, self).__init__()
 
-    @marshal_with(futuremark3dmark06result_fields, envelope='futuremark3dmark06result')
+    @marshal_with(futuremark3dmark06result_fields,
+                  envelope='futuremark3dmark06result')
     def get(self, id):
         return Futuremark3DMark06Result.query.get_or_404(id)
 
     @auth.login_required
-    @marshal_with(futuremark3dmark06result_fields, envelope='futuremark3dmark06result')
+    @marshal_with(futuremark3dmark06result_fields,
+                  envelope='futuremark3dmark06result')
     def put(self, id):
         futuremark3dmark06result = Futuremark3DMark06Result.query.get_or_404(id)
         args = self.reqparse.parse_args()
         for k, v in args.items():
             if v is not None:
-                setattr(futuremark3dmark06result, k, v)
+                # *dies a little inside*
+                if k == 'result_date':
+                    setattr(futuremark3dmark06result, k, parser.parse(v))
+                else:
+                    setattr(futuremark3dmark06result, k, v)
         db.session.commit()
         return futuremark3dmark06result
 
     @auth.login_required
     def delete(self, id):
-        Futuremark3DMark06Result.query.filter(Futuremark3DMark06Result.id == id).delete()
+        Futuremark3DMark06Result.query\
+            .filter(Futuremark3DMark06Result.id == id).delete()
         db.session.commit()
         return {'result': True}
 
@@ -75,28 +86,38 @@ class RevisionFuturemark3DMark06ResultListAPI(Resource):
         self.reqparse.add_argument('cpu_score', type=str, location='json')
         self.reqparse.add_argument('sm3_score', type=int, location='json')
         self.reqparse.add_argument('proxcyon_fps', type=str, location='json')
-        self.reqparse.add_argument('fireflyforest_fps', type=int, location='json')
+        self.reqparse.add_argument('fireflyforest_fps', type=int,
+                                   location='json')
         self.reqparse.add_argument('cpu1_fps', type=str, location='json')
         self.reqparse.add_argument('cpu2_fps', type=int, location='json')
-        self.reqparse.add_argument('canyonflight_fps', type=str, location='json')
+        self.reqparse.add_argument('canyonflight_fps', type=str,
+                                   location='json')
         self.reqparse.add_argument('deepfreeze_fps', type=str, location='json')
         self.reqparse.add_argument('overall_score', type=str, location='json')
         self.reqparse.add_argument('result_url', type=str, location='json')
         super(RevisionFuturemark3DMark06ResultListAPI, self).__init__()
 
-    @marshal_with(futuremark3dmark06result_fields, envelope='futuremark3dmark06results')
+    @marshal_with(futuremark3dmark06result_fields,
+                  envelope='futuremark3dmark06results')
     def get(self, id):
         revision = Revision.query.get_or_404(id)
         return revision.futuremark3dmark06results.all()
 
     @auth.login_required
-    @marshal_with(futuremark3dmark06result_fields, envelope='futuremark3dmark06result')
+    @marshal_with(futuremark3dmark06result_fields,
+                  envelope='futuremark3dmark06result')
     def post(self, id):
         args = self.reqparse.parse_args()
+
+        # parse the datetime provided
+        rd = None
+        if args['result_date'] is not None:
+            rd = parser.parse(args['result_date'])
+
         revision = Revision.query.get_or_404(id)
 
         futuremark3dmark06result = Futuremark3DMark06Result(
-            result_date=args['result_date'],
+            result_date=rd,
             sm2_score=args['sm2_score'],
             cpu_score=args['cpu_score'],
             sm3_score=args['sm3_score'],
