@@ -85,12 +85,13 @@ class Revision(db.Model):
                                           cascade='all,delete',
                                           backref='revision', lazy='dynamic')
     futuremark3dmark06results = db.relationship('Futuremark3DMark06Result',
-                                            cascade='all,delete',
-                                            backref='revision', lazy='dynamic')
+                                                cascade='all,delete',
+                                                backref='revision',
+                                                lazy='dynamic')
     futuremark3dmarkresults = db.relationship('Futuremark3DMarkResult',
-                                            cascade='all,delete',
-                                            backref='revision',
-                                            lazy='dynamic')
+                                              cascade='all,delete',
+                                              backref='revision',
+                                              lazy='dynamic')
 
 
 class CinebenchR15Result(db.Model):
