@@ -2,6 +2,7 @@ from flask_restful import Api, Resource, reqparse, fields, marshal_with
 from ..resources.authentication import auth
 from ... import db
 from ...models import Revision, Futuremark3DMarkResult
+from dateutil import parser
 
 
 futuremark3dmarkresult_fields = {
@@ -20,7 +21,8 @@ futuremark3dmarkresult_fields = {
 
 
 class Futuremark3DMarkResultListAPI(Resource):
-    @marshal_with(futuremark3dmarkresult_fields, envelope='futuremark3dmarkresults')
+    @marshal_with(futuremark3dmarkresult_fields,
+                  envelope='futuremark3dmarkresults')
     def get(self):
         return Futuremark3DMarkResult.query.all()
 
@@ -28,19 +30,30 @@ class Futuremark3DMarkResultListAPI(Resource):
 class Futuremark3DMarkResultAPI(Resource):
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
-        self.reqparse.add_argument('result_date', type=str, location='json')
-        self.reqparse.add_argument('icestorm_score', type=int, location='json')
-        self.reqparse.add_argument('icestorm_result_url', type=str, location='json')
-        self.reqparse.add_argument('cloudgate_score', type=int, location='json')
-        self.reqparse.add_argument('cloudgate_result_url', type=str, location='json')
-        self.reqparse.add_argument('firestrike_score', type=int, location='json')
-        self.reqparse.add_argument('firestrike_result_url', type=str, location='json')
-        self.reqparse.add_argument('skydiver_score', type=int, location='json')
-        self.reqparse.add_argument('skydiver_result_url', type=str, location='json')
-        self.reqparse.add_argument('overall_result_url', type=str, location='json')
+        self.reqparse.add_argument('result_date', type=str,
+                                   location='json')
+        self.reqparse.add_argument('icestorm_score', type=int,
+                                   location='json')
+        self.reqparse.add_argument('icestorm_result_url', type=str,
+                                   location='json')
+        self.reqparse.add_argument('cloudgate_score', type=int,
+                                   location='json')
+        self.reqparse.add_argument('cloudgate_result_url', type=str,
+                                   location='json')
+        self.reqparse.add_argument('firestrike_score', type=int,
+                                   location='json')
+        self.reqparse.add_argument('firestrike_result_url', type=str,
+                                   location='json')
+        self.reqparse.add_argument('skydiver_score', type=int,
+                                   location='json')
+        self.reqparse.add_argument('skydiver_result_url', type=str,
+                                   location='json')
+        self.reqparse.add_argument('overall_result_url', type=str,
+                                   location='json')
         super(Futuremark3DMarkResultAPI, self).__init__()
 
-    @marshal_with(futuremark3dmarkresult_fields, envelope='futuremark3dmarkresult')
+    @marshal_with(futuremark3dmarkresult_fields,
+                  envelope='futuremark3dmarkresult')
     def get(self, id):
         return Futuremark3DMarkResult.query.get_or_404(id)
 
@@ -49,19 +62,25 @@ class Futuremark3DMarkResultAPI(Resource):
         return Futuremark3DMarkResult.query.get_or_404(id)
 
     @auth.login_required
-    @marshal_with(futuremark3dmarkresult_fields, envelope='futuremark3dmarkresult')
+    @marshal_with(futuremark3dmarkresult_fields,
+                  envelope='futuremark3dmarkresult')
     def put(self, id):
         futuremark3dmarkresult = Futuremark3DMarkResult.query.get_or_404(id)
         args = self.reqparse.parse_args()
         for k, v in args.items():
             if v is not None:
-                setattr(futuremark3dmarkresult, k, v)
+                # ew.
+                if k == 'result_date':
+                    setattr(futuremark3dmarkresult, k, parser.parse(v))
+                else:
+                    setattr(futuremark3dmarkresult, k, v)
         db.session.commit()
         return futuremark3dmarkresult
 
     @auth.login_required
     def delete(self, id):
-        Futuremark3DMarkResult.query.filter(Futuremark3DMarkResult.id == id).delete()
+        Futuremark3DMarkResult.query.filter(
+                                    Futuremark3DMarkResult.id == id).delete()
         db.session.commit()
         return {'result': True}
 
@@ -69,31 +88,49 @@ class Futuremark3DMarkResultAPI(Resource):
 class RevisionFuturemark3DMarkResultListAPI(Resource):
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
-        self.reqparse.add_argument('result_date', type=str, location='json')
-        self.reqparse.add_argument('icestorm_score', type=int, location='json')
-        self.reqparse.add_argument('icestorm_result_url', type=str, location='json')
-        self.reqparse.add_argument('cloudgate_score', type=int, location='json')
-        self.reqparse.add_argument('cloudgate_result_url', type=str, location='json')
-        self.reqparse.add_argument('firestrike_score', type=int, location='json')
-        self.reqparse.add_argument('firestrike_result_url', type=str, location='json')
-        self.reqparse.add_argument('skydiver_score', type=int, location='json')
-        self.reqparse.add_argument('skydiver_result_url', type=str, location='json')
-        self.reqparse.add_argument('overall_result_url', type=str, location='json')
+        self.reqparse.add_argument('result_date', type=str,
+                                   location='json')
+        self.reqparse.add_argument('icestorm_score', type=int,
+                                   location='json')
+        self.reqparse.add_argument('icestorm_result_url', type=str,
+                                   location='json')
+        self.reqparse.add_argument('cloudgate_score', type=int,
+                                   location='json')
+        self.reqparse.add_argument('cloudgate_result_url', type=str,
+                                   location='json')
+        self.reqparse.add_argument('firestrike_score', type=int,
+                                   location='json')
+        self.reqparse.add_argument('firestrike_result_url', type=str,
+                                   location='json')
+        self.reqparse.add_argument('skydiver_score', type=int,
+                                   location='json')
+        self.reqparse.add_argument('skydiver_result_url', type=str,
+                                   location='json')
+        self.reqparse.add_argument('overall_result_url',
+                                   type=str, location='json')
         super(RevisionFuturemark3DMarkResultListAPI, self).__init__()
 
-    @marshal_with(futuremark3dmarkresult_fields, envelope='futuremark3dmarkresults')
+    @marshal_with(futuremark3dmarkresult_fields,
+                  envelope='futuremark3dmarkresults')
     def get(self, id):
         revision = Revision.query.get_or_404(id)
         return revision.futuremark3dmarkresults.all()
 
     @auth.login_required
-    @marshal_with(futuremark3dmarkresult_fields, envelope='futuremark3dmarkresult')
+    @marshal_with(futuremark3dmarkresult_fields,
+                  envelope='futuremark3dmarkresult')
     def post(self, id):
         args = self.reqparse.parse_args()
+
+        # parse the datetime provided
+        rd = None
+        if args['result_date'] is not None:
+            rd = parser.parse(args['result_date'])
+
         revision = Revision.query.get_or_404(id)
 
         futuremark3dmarkresult = Futuremark3DMarkResult(
-            result_date=args['result_date'],
+            result_date=rd,
             icestorm_score=args['icestorm_score'],
             icestorm_result_url=args['icestorm_result_url'],
             cloudgate_score=args['cloudgate_score'],
