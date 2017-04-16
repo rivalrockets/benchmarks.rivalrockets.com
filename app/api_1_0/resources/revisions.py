@@ -6,7 +6,7 @@ from .futuremark3dmark06results import futuremark3dmark06result_fields
 from .futuremark3dmarkresults import futuremark3dmarkresult_fields
 from ... import db
 from ...models import Machine, Revision
-import dateutil.parser
+from dateutil import parser
 
 
 revision_fields = {
@@ -78,7 +78,7 @@ class RevisionAPI(Resource):
             if v is not None:
                 # this code smells of elderberries
                 if k == 'timestamp':
-                    setattr(revision, k, dateutil.parser.parse(v))
+                    setattr(revision, k, parser.parse(v))
                 else:
                     setattr(revision, k, v)
         db.session.commit()
@@ -127,7 +127,7 @@ class MachineRevisionListAPI(Resource):
 
         # parse the timestamp provided
         try:
-            ts = dateutil.parser.parse(args['timestamp'])
+            ts = parser.parse(args['timestamp'])
         except TypeError:
             ts = None # none will use the model's default (current time)
 

@@ -10,7 +10,8 @@ auth = HTTPBasicAuth()
 @auth.error_handler
 def unauthorized():
     return make_response(jsonify({'error': 'Unauthorized access'}), 403)
-    # return 403 instead of 401 to prevent browsers from displaying the default auth dialog
+    # return 403 instead of 401 to prevent browsers from
+    # displaying the default auth dialog
 
 
 @auth.verify_password

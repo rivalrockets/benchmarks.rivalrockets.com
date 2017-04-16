@@ -4,7 +4,7 @@ from .authentication import auth
 from .revisions import revision_fields
 from ... import db
 from ...models import Machine
-import dateutil.parser
+from dateutil import parser
 
 
 machine_fields = {
@@ -46,7 +46,7 @@ class MachineListAPI(Resource):
         # parse the timestamp provided
         ts = None # set to none if not provided next
         if args['timestamp'] is not None:
-            ts = dateutil.parser.parse(args['timestamp'])
+            ts = parser.parse(args['timestamp'])
 
         machine = Machine(system_name=args['system_name'], 
                             system_notes=args['system_notes'],
@@ -89,7 +89,7 @@ class MachineAPI(Resource):
                 # this is a hack because I couldn't get a built-in datetime parser
                 # to work. This is bad and you should feel bad for reading it.
                 if k == 'timestamp':
-                    setattr(machine, k, dateutil.parser.parse(v))
+                    setattr(machine, k, parser.parse(v))
                 else:
                     setattr(machine, k, v)
         # autocommit? This doesn't appear to be necessary---leaving in for now.
