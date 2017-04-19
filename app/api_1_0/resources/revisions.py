@@ -10,6 +10,7 @@ from dateutil import parser
 
 
 revision_fields = {
+    'id': fields.Integer,
     'cpu_make': fields.String,
     'cpu_name': fields.String,
     'cpu_socket': fields.String,

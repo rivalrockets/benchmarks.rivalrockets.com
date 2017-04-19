@@ -6,6 +6,7 @@ from dateutil import parser
 
 
 futuremark3dmark06result_fields = {
+    'id': fields.Integer,
     'result_date': fields.DateTime(dt_format='iso8601'),
     'sm2_score': fields.Integer(default=None),
     'cpu_score': fields.Integer(default=None),

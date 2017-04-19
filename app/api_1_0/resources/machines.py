@@ -8,6 +8,7 @@ from dateutil import parser
 
 
 machine_fields = {
+    'id': fields.Integer,
     'system_name': fields.String,
     'system_notes': fields.String,
     'owner': fields.String,

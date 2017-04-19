@@ -7,6 +7,7 @@ from dateutil import parser
 
 
 cinebenchr15result_fields = {
+    'id': fields.Integer,
     'result_date': fields.DateTime(dt_format='iso8601'),
     'cpu_cb': fields.Integer(default=None),
     'opengl_fps': fields.Integer(default=None),

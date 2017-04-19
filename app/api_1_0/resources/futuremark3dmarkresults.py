@@ -6,6 +6,7 @@ from dateutil import parser
 
 
 futuremark3dmarkresult_fields = {
+    'id': fields.Integer,
     'result_date': fields.DateTime(dt_format='iso8601'),
     'icestorm_score': fields.Integer(default=None),
     'icestorm_result_url': fields.String,

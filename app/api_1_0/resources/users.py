@@ -9,6 +9,7 @@ from ...models import User
 # flask_restful fields usage:
 # note that the 'Url' field type takes the 'endpoint' for the arg
 user_fields = {
+    'id': fields.Integer,
     'username': fields.String,
     'uri': fields.Url('.user', absolute=True),
     'last_seen': fields.DateTime(dt_format='iso8601'),
