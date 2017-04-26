@@ -19,6 +19,19 @@ machine_fields = {
     'revisions': fields.List(fields.Nested(revision_fields))
 }
 
+machine_list_fields = {
+    'id': fields.Integer,
+    'system_name': fields.String,
+    'system_notes': fields.String,
+    'owner': fields.String,
+    'active_revision_id': fields.Integer(default=None),
+    'timestamp': fields.DateTime(dt_format='iso8601'),
+    'uri': fields.Url('.machine', absolute=True),
+    'author_id': fields.Integer(default=None),
+    'revisions': fields.List(fields.Nested(revision_fields)),
+    'author': fields.String(attribute='author.username', default=None),
+    'user_id': fields.Integer(attribute='author.id', default=None)
+}
 
 # View subclass of Resource (which inherits from MethodView)
 class MachineListAPI(Resource):
@@ -35,7 +48,7 @@ class MachineListAPI(Resource):
                                    location='json')
         super(MachineListAPI, self).__init__()
 
-    @marshal_with(machine_fields, envelope='machines')
+    @marshal_with(machine_list_fields, envelope='machines')
     def get(self):
         return Machine.query.all()
 
@@ -49,7 +62,7 @@ class MachineListAPI(Resource):
         if args['timestamp'] is not None:
             ts = parser.parse(args['timestamp'])
 
-        machine = Machine(system_name=args['system_name'], 
+        machine = Machine(system_name=args['system_name'],
                             system_notes=args['system_notes'],
                             owner=args['owner'],
                             timestamp=ts,
