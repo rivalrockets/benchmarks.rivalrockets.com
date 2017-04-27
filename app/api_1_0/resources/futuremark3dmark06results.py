@@ -42,9 +42,11 @@ futuremark3dmark06result_list_fields = {
                                     default=None),
     'machine_author_id': fields.Integer(attribute='revision.machine.author.id',
                                         default=None),
+    'machine_id': fields.Integer(attribute='revision.machine.id', default=None),
     'owner': fields.String(attribute='revision.machine.owner', default=None),
     'system_name': fields.String(attribute='revision.machine.system_name',
                                  default=None),
+    'revision_id': fields.Integer(attribute='revision.id', default=None),
     'active_revision': fields.Boolean(attribute=lambda x: x.revision.id ==
                                       x.revision.machine.active_revision_id,
                                       default=None)
