@@ -37,12 +37,12 @@ futuremark3dmark06result_list_fields = {
     'overall_score': fields.Integer(default=None),
     'result_url': fields.String(default=None),
     'uri': fields.Url('.futuremark3dmark06result', absolute=True),
-    'machine_author': fields.String(attribute=
-                                    'revision.machine.author.username',
-                                    default=None),
-    'machine_author_id': fields.Integer(attribute='revision.machine.author.id',
-                                        default=None),
-    'machine_id': fields.Integer(attribute='revision.machine.id', default=None),
+    'machine_author': fields.String(
+        attribute='revision.machine.author.username', default=None),
+    'machine_author_id': fields.Integer(
+        attribute='revision.machine.author.id', default=None),
+    'machine_id': fields.Integer(attribute='revision.machine.id',
+                                 default=None),
     'owner': fields.String(attribute='revision.machine.owner', default=None),
     'system_name': fields.String(attribute='revision.machine.system_name',
                                  default=None),
@@ -57,7 +57,8 @@ class Futuremark3DMark06ResultListAPI(Resource):
     @marshal_with(futuremark3dmark06result_list_fields,
                   envelope='futuremark3dmark06results')
     def get(self):
-        return Futuremark3DMark06Result.query.all()
+        return Futuremark3DMark06Result.query.order_by(
+            Futuremark3DMark06Result.overall_score.desc()).all()
 
 
 class Futuremark3DMark06ResultAPI(Resource):
@@ -88,7 +89,8 @@ class Futuremark3DMark06ResultAPI(Resource):
     @marshal_with(futuremark3dmark06result_fields,
                   envelope='futuremark3dmark06result')
     def put(self, id):
-        futuremark3dmark06result = Futuremark3DMark06Result.query.get_or_404(id)
+        futuremark3dmark06result = Futuremark3DMark06Result.query.get_or_404(
+            id)
         args = self.reqparse.parse_args()
         for k, v in args.items():
             if v is not None:
