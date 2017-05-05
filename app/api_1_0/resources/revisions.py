@@ -81,7 +81,7 @@ revision_list_fields = {
 class RevisionListAPI(Resource):
     @marshal_with(revision_list_fields, envelope='revisions')
     def get(self):
-        return Revision.query.all()
+        return Revision.query.order_by(Revision.timestamp.desc()).all()
 
 
 class RevisionAPI(Resource):
@@ -161,7 +161,7 @@ class MachineRevisionListAPI(Resource):
     @marshal_with(revision_fields, envelope='revisions')
     def get(self, id):
         machine = Machine.query.get_or_404(id)
-        return machine.revisions.all()
+        return machine.revisions.order_by(Revision.timestamp.desc()).all()
 
     @auth.login_required
     @marshal_with(revision_fields, envelope='revision')

@@ -50,7 +50,7 @@ class MachineListAPI(Resource):
 
     @marshal_with(machine_list_fields, envelope='machines')
     def get(self):
-        return Machine.query.all()
+        return Machine.query.order_by(Machine.timestamp.desc()).all()
 
     @auth.login_required
     @marshal_with(machine_fields, envelope='machine')
