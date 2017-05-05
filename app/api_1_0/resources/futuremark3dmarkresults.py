@@ -3,6 +3,7 @@ from ..resources.authentication import auth
 from ... import db
 from ...models import Revision, Futuremark3DMarkResult
 from dateutil import parser
+from sqlalchemy import desc
 
 
 futuremark3dmarkresult_fields = {
@@ -52,7 +53,12 @@ class Futuremark3DMarkResultListAPI(Resource):
     @marshal_with(futuremark3dmarkresult_list_fields,
                   envelope='futuremark3dmarkresults')
     def get(self):
-        return Futuremark3DMarkResult.query.all()
+        # order by sum of all scores to come up with kinda "aggregate score"
+        return Futuremark3DMarkResult.query.order_by(desc(
+            Futuremark3DMarkResult.icestorm_score +
+            Futuremark3DMarkResult.cloudgate_score + 
+            Futuremark3DMarkResult.firestrike_score +
+            Futuremark3DMarkResult.skydiver_score)).all()
 
 
 class Futuremark3DMarkResultAPI(Resource):
