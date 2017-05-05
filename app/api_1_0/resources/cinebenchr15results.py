@@ -21,8 +21,7 @@ cinebenchr15result_list_fields = {
     'cpu_cb': fields.Integer(default=None),
     'opengl_fps': fields.Integer(default=None),
     'uri': fields.Url('.cinebenchr15result', absolute=True),
-    'machine_author': fields.String(attribute=
-                                    'revision.machine.author.username',
+    'machine_author': fields.String(attribute='revision.machine.author.username',
                                     default=None),
     'machine_author_id': fields.Integer(attribute='revision.machine.author.id',
                                         default=None),
@@ -38,9 +37,11 @@ cinebenchr15result_list_fields = {
 
 
 class CinebenchR15ResultListAPI(Resource):
-    @marshal_with(cinebenchr15result_list_fields, envelope='cinebenchr15results')
+    @marshal_with(cinebenchr15result_list_fields,
+                  envelope='cinebenchr15results')
     def get(self):
-        return CinebenchR15Result.query.all()
+        return CinebenchR15Result.query.order_by(
+            CinebenchR15Result.cpu_cb.desc()).all()
 
 
 class CinebenchR15ResultAPI(Resource):
