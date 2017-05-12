@@ -1,8 +1,8 @@
-from flask_restful import Api, Resource, reqparse, fields, marshal_with
+from flask_restful import Resource, reqparse, fields, marshal_with
+from dateutil import parser
 from ..resources.authentication import auth
 from ... import db
 from ...models import Revision, Futuremark3DMark06Result
-from dateutil import parser
 
 
 futuremark3dmark06result_fields = {

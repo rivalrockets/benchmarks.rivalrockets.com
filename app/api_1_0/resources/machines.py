@@ -1,10 +1,10 @@
 from flask import g
 from flask_restful import Resource, reqparse, fields, marshal_with
+from dateutil import parser
 from .authentication import auth
 from .revisions import revision_fields
 from ... import db
 from ...models import Machine
-from dateutil import parser
 
 
 machine_fields = {
@@ -63,10 +63,10 @@ class MachineListAPI(Resource):
             ts = parser.parse(args['timestamp'])
 
         machine = Machine(system_name=args['system_name'],
-                            system_notes=args['system_notes'],
-                            owner=args['owner'],
-                            timestamp=ts,
-                            author_id=g.user.id)
+                          system_notes=args['system_notes'],
+                          owner=args['owner'],
+                          timestamp=ts,
+                          author_id=g.user.id)
 
         db.session.add(machine)
         db.session.commit()

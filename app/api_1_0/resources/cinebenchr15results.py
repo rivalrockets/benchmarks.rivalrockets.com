@@ -1,9 +1,9 @@
 from flask import g
 from flask_restful import Resource, reqparse, fields, marshal_with
+from dateutil import parser
 from ..resources.authentication import auth
 from ... import db
 from ...models import Revision, CinebenchR15Result
-from dateutil import parser
 
 
 cinebenchr15result_fields = {
@@ -53,10 +53,6 @@ class CinebenchR15ResultAPI(Resource):
         super(CinebenchR15ResultAPI, self).__init__()
 
     @marshal_with(cinebenchr15result_fields, envelope='cinebenchr15result')
-    def get(self, id):
-        return CinebenchR15Result.query.get_or_404(id)
-
-    @auth.login_required
     def get(self, id):
         return CinebenchR15Result.query.get_or_404(id)
 

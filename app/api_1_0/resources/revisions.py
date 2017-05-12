@@ -1,12 +1,12 @@
 from flask import g
 from flask_restful import Resource, reqparse, fields, marshal_with
+from dateutil import parser
 from .authentication import auth
 from .cinebenchr15results import cinebenchr15result_fields
 from .futuremark3dmark06results import futuremark3dmark06result_fields
 from .futuremark3dmarkresults import futuremark3dmarkresult_fields
 from ... import db
 from ...models import Machine, Revision
-from dateutil import parser
 
 
 revision_fields = {

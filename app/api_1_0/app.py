@@ -1,4 +1,3 @@
-import os
 from flask_restful import Api
 from . import api_blueprint
 from ..api_1_0.resources.users import UserAPI, UserListAPI
