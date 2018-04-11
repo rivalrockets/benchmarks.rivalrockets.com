@@ -17,7 +17,7 @@ from ..api_1_0.resources.futuremark3dmarkresults import \
     RevisionFuturemark3DMarkResultListAPI
 
 
-api = Api(api_blueprint)
+api = Api(api_blueprint, catch_all_404s=True)
 
 api.add_resource(UserListAPI, '/users', endpoint='users')
 api.add_resource(UserAPI, '/users/<int:id>', endpoint='user')
