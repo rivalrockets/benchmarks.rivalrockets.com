@@ -6,6 +6,10 @@ from .revisions import revision_fields
 from ... import db
 from ...models import Machine
 
+machine_user_fields = {
+    'id': fields.Integer,
+    'username': fields.String
+}
 
 machine_fields = {
     'id': fields.Integer,
@@ -16,7 +20,8 @@ machine_fields = {
     'timestamp': fields.DateTime(dt_format='iso8601'),
     'uri': fields.Url('.machine', absolute=True),
     'author_id': fields.Integer(default=None),
-    'revisions': fields.List(fields.Nested(revision_fields))
+    'revisions': fields.List(fields.Nested(revision_fields)),
+    'user': fields.Nested(machine_user_fields)
 }
 
 machine_list_fields = {
@@ -27,10 +32,8 @@ machine_list_fields = {
     'active_revision_id': fields.Integer(default=None),
     'timestamp': fields.DateTime(dt_format='iso8601'),
     'uri': fields.Url('.machine', absolute=True),
-    'author_id': fields.Integer(default=None),
     'revisions': fields.List(fields.Nested(revision_fields)),
-    'author': fields.String(attribute='author.username', default=None),
-    'user_id': fields.Integer(attribute='author.id', default=None)
+    'user': fields.Nested(machine_user_fields)
 }
 
 # View subclass of Resource (which inherits from MethodView)
@@ -83,9 +86,9 @@ class MachineAPI(Resource):
                                    location='json')
         super(MachineAPI, self).__init__()
 
-    @marshal_with(machine_fields, envelope='machine')
+    @marshal_with(machine_fields)
     def get(self, id):
-        return Machine.query.get_or_404(id)
+        return Machine.query.get(id)
 
     @auth.login_required
     @marshal_with(machine_fields, envelope='machine')

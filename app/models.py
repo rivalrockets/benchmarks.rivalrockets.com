@@ -50,6 +50,7 @@ class Machine(db.Model):
     active_revision_id = db.Column(db.Integer, db.ForeignKey('machines.id'))
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
     author_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    user = db.relationship(User, lazy="joined", innerjoin=True)
 
     active_revision = db.relationship('Revision',
                                       cascade='all,delete',
