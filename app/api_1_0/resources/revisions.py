@@ -2,9 +2,7 @@ from flask import g
 from flask_restful import Resource, reqparse, fields, marshal_with
 from dateutil import parser
 from .authentication import auth
-from .cinebenchr15results import cinebenchr15result_fields
-from .futuremark3dmark06results import futuremark3dmark06result_fields
-from .futuremark3dmarkresults import futuremark3dmarkresult_fields
+from .machines import machine_fields
 from ... import db
 from ...models import Machine, Revision
 
@@ -26,60 +24,14 @@ revision_fields = {
     'revision_notes_html': fields.String,
     'pcpartpicker_url': fields.String,
     'timestamp': fields.DateTime(dt_format='iso8601'),
-    'author_id': fields.Integer(default=None),
-    'machine_id': fields.Integer(default=None),
-    'uri': fields.Url('.revision', absolute=True),
-    'cinebenchr15results': fields.List(fields.Nested(
-                                       cinebenchr15result_fields)),
-    'futuremark3dmark06results': fields.List(fields.Nested(
-                                             futuremark3dmark06result_fields)),
-    'futuremark3dmarkresults': fields.List(fields.Nested(
-                                           futuremark3dmarkresult_fields))
-}
-
-revision_list_fields = {
-    'id': fields.Integer,
-    'cpu_make': fields.String,
-    'cpu_name': fields.String,
-    'cpu_socket': fields.String,
-    'cpu_mhz': fields.Integer(default=None),
-    'cpu_proc_cores': fields.Integer(default=None),
-    'chipset': fields.String,
-    'system_memory_gb': fields.Integer(default=None),
-    'system_memory_mhz': fields.Integer(default=None),
-    'gpu_name': fields.String,
-    'gpu_make': fields.String,
-    'gpu_memory_gb': fields.Integer(default=None),
-    'revision_notes': fields.String,
-    'revision_notes_html': fields.String,
-    'pcpartpicker_url': fields.String,
-    'timestamp': fields.DateTime(dt_format='iso8601'),
-    'author_id': fields.Integer(default=None),
-    'machine_id': fields.Integer(default=None),
-    'uri': fields.Url('.revision', absolute=True),
-    'cinebenchr15results': fields.List(fields.Nested(
-                                       cinebenchr15result_fields)),
-    'futuremark3dmark06results': fields.List(fields.Nested(
-                                             futuremark3dmark06result_fields)),
-    'futuremark3dmarkresults': fields.List(fields.Nested(
-                                           futuremark3dmarkresult_fields)),
-    'machine_author': fields.String(attribute=
-                                    'machine.author.username',
-                                    default=None),
-    'machine_author_id': fields.Integer(attribute='machine.author.id',
-                                        default=None),
-    'owner': fields.String(attribute='machine.owner', default=None),
-    'system_name': fields.String(attribute='machine.system_name',
-                                 default=None),
-    'active_revision': fields.Boolean(attribute=lambda x: x.id ==
-                                      x.machine.active_revision_id,
-                                      default=None)
+    'machine': fields.Nested(machine_fields),
+    'uri': fields.Url('.revision', absolute=True)
 }
 
 
 # global revision list
 class RevisionListAPI(Resource):
-    @marshal_with(revision_list_fields, envelope='revisions')
+    @marshal_with(revision_fields, envelope='revisions')
     def get(self):
         return Revision.query.order_by(Revision.timestamp.desc()).all()
 

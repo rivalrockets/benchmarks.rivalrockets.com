@@ -2,6 +2,7 @@ from flask import g
 from flask_restful import Resource, reqparse, fields, marshal_with
 from dateutil import parser
 from ..resources.authentication import auth
+from .revisions import revision_fields
 from ... import db
 from ...models import Revision, CinebenchR15Result
 
@@ -11,33 +12,13 @@ cinebenchr15result_fields = {
     'result_date': fields.DateTime(dt_format='iso8601'),
     'cpu_cb': fields.Integer(default=None),
     'opengl_fps': fields.Integer(default=None),
+    'revision': fields.Nested(revision_fields),
     'uri': fields.Url('.cinebenchr15result', absolute=True)
 }
 
 
-cinebenchr15result_list_fields = {
-    'id': fields.Integer,
-    'result_date': fields.DateTime(dt_format='iso8601'),
-    'cpu_cb': fields.Integer(default=None),
-    'opengl_fps': fields.Integer(default=None),
-    'uri': fields.Url('.cinebenchr15result', absolute=True),
-    'machine_author': fields.String(attribute='revision.machine.author.username',
-                                    default=None),
-    'machine_author_id': fields.Integer(attribute='revision.machine.author.id',
-                                        default=None),
-    'machine_id': fields.Integer(attribute='revision.machine.id', default=None),
-    'owner': fields.String(attribute='revision.machine.owner', default=None),
-    'system_name': fields.String(attribute='revision.machine.system_name',
-                                 default=None),
-    'revision_id': fields.Integer(attribute='revision.id', default=None),
-    'active_revision': fields.Boolean(attribute=lambda x: x.revision.id ==
-                                      x.revision.machine.active_revision_id,
-                                      default=None)
-}
-
-
 class CinebenchR15ResultListAPI(Resource):
-    @marshal_with(cinebenchr15result_list_fields,
+    @marshal_with(cinebenchr15result_fields,
                   envelope='cinebenchr15results')
     def get(self):
         return CinebenchR15Result.query.order_by(

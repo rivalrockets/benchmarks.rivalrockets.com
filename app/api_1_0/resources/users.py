@@ -1,7 +1,6 @@
 from flask import g
 from flask_restful import Resource, reqparse, fields, marshal_with
 from .authentication import auth
-from .machines import machine_fields
 from ... import db
 from ...models import User
 
@@ -12,8 +11,7 @@ user_fields = {
     'id': fields.Integer,
     'username': fields.String,
     'uri': fields.Url('.user', absolute=True),
-    'last_seen': fields.DateTime(dt_format='iso8601'),
-    'machines': fields.List(fields.Nested(machine_fields))
+    'last_seen': fields.DateTime(dt_format='iso8601')
 }
 
 

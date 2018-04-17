@@ -1,8 +1,8 @@
 from flask_restful import Resource, reqparse, fields, marshal_with
 from dateutil import parser
-from ..resources.authentication import auth
+from .authentication import auth
+from .revisions import revision_fields
 from ... import db
-from ...models import Revision, Futuremark3DMark06Result
 
 
 futuremark3dmark06result_fields = {
@@ -19,42 +19,15 @@ futuremark3dmark06result_fields = {
     'deepfreeze_fps': fields.Fixed(decimals=2, default=None),
     'overall_score': fields.Integer(default=None),
     'result_url': fields.String(default=None),
+    'revision': fields.Nested(revision_fields),
     'uri': fields.Url('.futuremark3dmark06result', absolute=True)
 }
 
-futuremark3dmark06result_list_fields = {
-    'id': fields.Integer,
-    'result_date': fields.DateTime(dt_format='iso8601'),
-    'sm2_score': fields.Integer(default=None),
-    'cpu_score': fields.Integer(default=None),
-    'sm3_score': fields.Integer(default=None),
-    'proxcyon_fps': fields.Fixed(decimals=2, default=None),
-    'fireflyforest_fps': fields.Fixed(decimals=2, default=None),
-    'cpu1_fps': fields.Fixed(decimals=2, default=None),
-    'cpu2_fps': fields.Fixed(decimals=2, default=None),
-    'canyonflight_fps': fields.Fixed(decimals=2, default=None),
-    'deepfreeze_fps': fields.Fixed(decimals=2, default=None),
-    'overall_score': fields.Integer(default=None),
-    'result_url': fields.String(default=None),
-    'uri': fields.Url('.futuremark3dmark06result', absolute=True),
-    'machine_author': fields.String(
-        attribute='revision.machine.author.username', default=None),
-    'machine_author_id': fields.Integer(
-        attribute='revision.machine.author.id', default=None),
-    'machine_id': fields.Integer(attribute='revision.machine.id',
-                                 default=None),
-    'owner': fields.String(attribute='revision.machine.owner', default=None),
-    'system_name': fields.String(attribute='revision.machine.system_name',
-                                 default=None),
-    'revision_id': fields.Integer(attribute='revision.id', default=None),
-    'active_revision': fields.Boolean(attribute=lambda x: x.revision.id ==
-                                      x.revision.machine.active_revision_id,
-                                      default=None)
-}
 
+from ...models import Revision, Futuremark3DMark06Result
 
 class Futuremark3DMark06ResultListAPI(Resource):
-    @marshal_with(futuremark3dmark06result_list_fields,
+    @marshal_with(futuremark3dmark06result_fields,
                   envelope='futuremark3dmark06results')
     def get(self):
         return Futuremark3DMark06Result.query.order_by(

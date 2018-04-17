@@ -2,13 +2,29 @@ from flask import g
 from flask_restful import Resource, reqparse, fields, marshal_with
 from dateutil import parser
 from .authentication import auth
-from .revisions import revision_fields
 from ... import db
+from .users import user_fields
 from ...models import Machine
 
-machine_user_fields = {
+
+active_revision_fields = {
     'id': fields.Integer,
-    'username': fields.String
+    'cpu_make': fields.String,
+    'cpu_name': fields.String,
+    'cpu_socket': fields.String,
+    'cpu_mhz': fields.Integer(default=None),
+    'cpu_proc_cores': fields.Integer(default=None),
+    'chipset': fields.String,
+    'system_memory_gb': fields.Integer(default=None),
+    'system_memory_mhz': fields.Integer(default=None),
+    'gpu_name': fields.String,
+    'gpu_make': fields.String,
+    'gpu_memory_gb': fields.Integer(default=None),
+    'revision_notes': fields.String,
+    'revision_notes_html': fields.String,
+    'pcpartpicker_url': fields.String,
+    'timestamp': fields.DateTime(dt_format='iso8601'),
+    'uri': fields.Url('.revision', absolute=True)
 }
 
 machine_fields = {
@@ -16,25 +32,22 @@ machine_fields = {
     'system_name': fields.String,
     'system_notes': fields.String,
     'owner': fields.String,
-    'active_revision_id': fields.Integer(default=None),
+    'active_revision': fields.Nested(active_revision_fields),
     'timestamp': fields.DateTime(dt_format='iso8601'),
     'uri': fields.Url('.machine', absolute=True),
-    'author_id': fields.Integer(default=None),
-    'revisions': fields.List(fields.Nested(revision_fields)),
-    'user': fields.Nested(machine_user_fields)
+    'user': fields.Nested(user_fields)
 }
 
-machine_list_fields = {
-    'id': fields.Integer,
-    'system_name': fields.String,
-    'system_notes': fields.String,
-    'owner': fields.String,
-    'active_revision_id': fields.Integer(default=None),
-    'timestamp': fields.DateTime(dt_format='iso8601'),
-    'uri': fields.Url('.machine', absolute=True),
-    'revisions': fields.List(fields.Nested(revision_fields)),
-    'user': fields.Nested(machine_user_fields)
-}
+# machine_list_fields = {
+#     'id': fields.Integer,
+#     'system_name': fields.String,
+#     'system_notes': fields.String,
+#     'owner': fields.String,
+#     'active_revision': fields.Nested(active_revision_fields),
+#     'timestamp': fields.DateTime(dt_format='iso8601'),
+#     'uri': fields.Url('.machine', absolute=True),
+#     'user': fields.Nested(user_fields)
+# }
 
 # View subclass of Resource (which inherits from MethodView)
 class MachineListAPI(Resource):
@@ -51,7 +64,7 @@ class MachineListAPI(Resource):
                                    location='json')
         super(MachineListAPI, self).__init__()
 
-    @marshal_with(machine_list_fields, envelope='machines')
+    @marshal_with(machine_fields, envelope='machines')
     def get(self):
         return Machine.query.order_by(Machine.timestamp.desc()).all()
 

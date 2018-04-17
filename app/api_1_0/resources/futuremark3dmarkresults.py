@@ -2,6 +2,7 @@ from flask_restful import Resource, reqparse, fields, marshal_with
 from dateutil import parser
 from sqlalchemy import desc
 from ..resources.authentication import auth
+from .revisions import revision_fields
 from ... import db
 from ...models import Revision, Futuremark3DMarkResult
 
@@ -18,39 +19,13 @@ futuremark3dmarkresult_fields = {
     'skydiver_score': fields.Integer(default=None),
     'skydiver_result_url': fields.String,
     'overall_result_url': fields.String,
+    'revision': fields.Nested(revision_fields),
     'uri': fields.Url('.futuremark3dmarkresult', absolute=True)
 }
 
-futuremark3dmarkresult_list_fields = {
-    'id': fields.Integer,
-    'result_date': fields.DateTime(dt_format='iso8601'),
-    'icestorm_score': fields.Integer(default=None),
-    'icestorm_result_url': fields.String,
-    'cloudgate_score': fields.Integer(default=None),
-    'cloudgate_result_url': fields.String,
-    'firestrike_score': fields.Integer(default=None),
-    'firestrike_result_url': fields.String,
-    'skydiver_score': fields.Integer(default=None),
-    'skydiver_result_url': fields.String,
-    'overall_result_url': fields.String,
-    'uri': fields.Url('.futuremark3dmarkresult', absolute=True),
-    'machine_author': fields.String(attribute=
-                                    'revision.machine.author.username',
-                                    default=None),
-    'machine_author_id': fields.Integer(attribute='revision.machine.author.id',
-                                        default=None),
-    'machine_id': fields.Integer(attribute='revision.machine.id', default=None),
-    'owner': fields.String(attribute='revision.machine.owner', default=None),
-    'system_name': fields.String(attribute='revision.machine.system_name',
-                                 default=None),
-    'revision_id': fields.Integer(attribute='revision.id', default=None),
-    'active_revision': fields.Boolean(attribute=lambda x: x.revision.id ==
-                                      x.revision.machine.active_revision_id,
-                                      default=None)
-}
 
 class Futuremark3DMarkResultListAPI(Resource):
-    @marshal_with(futuremark3dmarkresult_list_fields,
+    @marshal_with(futuremark3dmarkresult_fields,
                   envelope='futuremark3dmarkresults')
     def get(self):
         # order by sum of all scores to come up with kinda "aggregate score"
