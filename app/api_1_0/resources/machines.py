@@ -4,7 +4,7 @@ from dateutil import parser
 from .authentication import auth
 from ... import db
 from .users import user_fields
-from ...models import Machine
+from ...models import User, Machine
 
 
 active_revision_fields = {
@@ -38,16 +38,6 @@ machine_fields = {
     'user': fields.Nested(user_fields)
 }
 
-# machine_list_fields = {
-#     'id': fields.Integer,
-#     'system_name': fields.String,
-#     'system_notes': fields.String,
-#     'owner': fields.String,
-#     'active_revision': fields.Nested(active_revision_fields),
-#     'timestamp': fields.DateTime(dt_format='iso8601'),
-#     'uri': fields.Url('.machine', absolute=True),
-#     'user': fields.Nested(user_fields)
-# }
 
 # View subclass of Resource (which inherits from MethodView)
 class MachineListAPI(Resource):
@@ -83,6 +73,45 @@ class MachineListAPI(Resource):
                           owner=args['owner'],
                           timestamp=ts,
                           author_id=g.user.id)
+
+        db.session.add(machine)
+        db.session.commit()
+        return machine, 201
+
+class UserMachineListAPI(Resource):
+    def __init__(self):
+        self.reqparse = reqparse.RequestParser()
+        self.reqparse.add_argument('system_name', type=str, required=True,
+                                   help='No machine name provided',
+                                   location='json')
+        self.reqparse.add_argument('system_notes', type=str, default="",
+                                   location='json')
+        self.reqparse.add_argument('owner', type=str, default="",
+                                   location='json')
+        self.reqparse.add_argument('timestamp', type=str,
+                                   location='json')
+        super(UserMachineListAPI, self).__init__()
+
+    @marshal_with(machine_fields, envelope='machines')
+    def get(self, id):
+        return User.query.get(id
+                        ).machines.order_by(Machine.timestamp.desc()).all()
+
+    @auth.login_required
+    @marshal_with(machine_fields, envelope='machine')
+    def post(self, id):
+        args = self.reqparse.parse_args()
+
+        # parse the timestamp provided
+        ts = None # set to none if not provided next
+        if args['timestamp'] is not None:
+            ts = parser.parse(args['timestamp'])
+
+        machine = Machine(system_name=args['system_name'],
+                          system_notes=args['system_notes'],
+                          owner=args['owner'],
+                          timestamp=ts,
+                          author_id=id)
 
         db.session.add(machine)
         db.session.commit()
