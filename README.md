@@ -17,7 +17,7 @@ Then activate your virtual environment:
     $ source venv/bin/activate
 
 Now install the python packages listed in the requirements.txt with `pip`:
-I
+
     $ (venv) pip install -r requirements.txt
 
 Next run the exports to tell the `flask` CLI to use the rivalrockets-api.py for the `app` function and also set the environment variable to tell `flask` this is the development environment.
