@@ -18,17 +18,17 @@ Then activate your virtual environment:
 
 Now install the python packages listed in the requirements.txt with `pip`:
 
-    $ (venv) pip install -r requirements.txt
+    (venv) $ pip install -r requirements.txt
 
 Next run the exports to tell the `flask` CLI to use the rivalrockets-api.py for the `app` function and also set the environment variable to tell `flask` this is the development environment.
 
-    $ (venv) export FLASK_APP=rivalrockets-api.py
-    $ (venv) export FLASK_ENV=development
+    (venv) $ export FLASK_APP=rivalrockets-api.py
+    (venv) $ export FLASK_ENV=development
 
 Then run the following to set up the local dev SQLite database (you only need to do this once).
 
-    $ (venv) flask db upgrade
+    (venv) $ flask db upgrade
 
 Now run the following to fire up the Flask app for local dev and testing at http://127.0.0.1:5000/api/v1.0/
 
-    $ (venv) flask run
+    (venv) $ flask run
