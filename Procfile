@@ -1,1 +1,1 @@
-web: gunicorn rivalrockets-api:app
+web: flask db upgrade; gunicorn rivalrockets-api:app
