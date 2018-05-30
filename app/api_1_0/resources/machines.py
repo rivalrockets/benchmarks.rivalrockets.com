@@ -1,7 +1,7 @@
 from flask import g
 from flask_restful import Resource, reqparse, fields, marshal_with
 from dateutil import parser
-from .authentication import auth
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from ... import db
 from .users import user_fields
 from ...models import User, Machine
@@ -23,8 +23,8 @@ active_revision_fields = {
     'revision_notes': fields.String,
     'revision_notes_html': fields.String,
     'pcpartpicker_url': fields.String,
-    'timestamp': fields.DateTime(dt_format='iso8601'),
-    'uri': fields.Url('.revision', absolute=True)
+    'timestamp': fields.DateTime(dt_format='iso8601')
+    # 'uri': fields.Url('.revision', absolute=True)
 }
 
 machine_fields = {
@@ -34,7 +34,7 @@ machine_fields = {
     'owner': fields.String,
     'active_revision': fields.Nested(active_revision_fields),
     'timestamp': fields.DateTime(dt_format='iso8601'),
-    'uri': fields.Url('.machine', absolute=True),
+    # 'uri': fields.Url('.machine', absolute=True),
     'user': fields.Nested(user_fields)
 }
 
@@ -58,7 +58,7 @@ class MachineListAPI(Resource):
     def get(self):
         return Machine.query.order_by(Machine.timestamp.desc()).all()
 
-    @auth.login_required
+    @jwt_required
     @marshal_with(machine_fields, envelope='machine')
     def post(self):
         args = self.reqparse.parse_args()
@@ -67,12 +67,15 @@ class MachineListAPI(Resource):
         ts = None # set to none if not provided next
         if args['timestamp'] is not None:
             ts = parser.parse(args['timestamp'])
+        current_username = get_jwt_identity()
+        current_user = User.find_by_username(current_username)
 
         machine = Machine(system_name=args['system_name'],
                           system_notes=args['system_notes'],
                           owner=args['owner'],
                           timestamp=ts,
-                          author_id=g.user.id)
+                          active_revision_id=None,
+                          author_id=current_user.id)
 
         db.session.add(machine)
         db.session.commit()
@@ -97,7 +100,8 @@ class UserMachineListAPI(Resource):
         return User.query.get(id
                         ).machines.order_by(Machine.timestamp.desc()).all()
 
-    @auth.login_required
+    # @jwt_required
+    @jwt_required
     @marshal_with(machine_fields, envelope='machine')
     def post(self, id):
         args = self.reqparse.parse_args()
@@ -132,7 +136,8 @@ class MachineAPI(Resource):
     def get(self, id):
         return Machine.query.get(id)
 
-    @auth.login_required
+    # @jwt_required
+    @jwt_required
     @marshal_with(machine_fields, envelope='machine')
     def put(self, id):
         machine = Machine.query.get_or_404(id)
@@ -155,7 +160,8 @@ class MachineAPI(Resource):
         db.session.commit()
         return machine
 
-    @auth.login_required
+    # @jwt_required
+    @jwt_required
     def delete(self, id):
         Machine.query.filter(Machine.id == id).delete()
         db.session.commit()

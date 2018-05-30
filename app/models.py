@@ -2,10 +2,9 @@
 from datetime import datetime
 from flask import current_app
 from passlib.apps import custom_app_context as pwd_context
-from itsdangerous import (TimedJSONWebSignatureSerializer
-                          as Serializer, BadSignature, SignatureExpired)
 # per http://stackoverflow.com/a/9695045
 from flask_sqlalchemy import SQLAlchemy
+from passlib.hash import pbkdf2_sha256 as sha256
 
 from . import db
 
@@ -23,21 +22,17 @@ class User(db.Model):
     def verify_password(self, password):
         return pwd_context.verify(password, self.password_hash)
 
-    def generate_auth_token(self, expiration=600):
-        s = Serializer(current_app.config['SECRET_KEY'], expires_in=expiration)
-        return s.dumps({'id': self.id})
+    @staticmethod
+    def generate_hash(password):
+        return sha256.hash(password)
 
     @staticmethod
-    def verify_auth_token(token):
-        s = Serializer(current_app.config['SECRET_KEY'])
-        try:
-            data = s.loads(token)
-        except SignatureExpired:
-            return None # valid token, but expired
-        except BadSignature:
-            return None # invalid token
-        user = User.query.get(data['id'])
-        return user
+    def verify_hash(password, hash):
+        return sha256.verify(password, hash)
+
+    @classmethod
+    def find_by_username(cls, username):
+        return cls.query.filter_by(username = username).first()
 
 
 class Machine(db.Model):

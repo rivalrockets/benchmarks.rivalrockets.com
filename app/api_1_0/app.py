@@ -1,7 +1,7 @@
 from flask_restful import Api
 from . import api_blueprint
 from ..api_1_0.resources.users import UserAPI, UserListAPI
-from ..api_1_0.resources.authentication import TokenAPI
+from ..api_1_0.resources.authentication import TokenRefresh, UserLogin
 from ..api_1_0.resources.machines import MachineAPI, MachineListAPI, \
     UserMachineListAPI
 from ..api_1_0.resources.revisions import RevisionAPI, RevisionListAPI, \
@@ -24,7 +24,8 @@ api.add_resource(UserListAPI, '/users', endpoint='users')
 api.add_resource(UserAPI, '/users/<int:id>', endpoint='user')
 api.add_resource(UserMachineListAPI, '/users/<int:id>/machines',
                 endpoint='user_machines')
-api.add_resource(TokenAPI, '/token', endpoint='token')
+api.add_resource(UserLogin, '/login')
+api.add_resource(TokenRefresh, '/tokenrefresh', endpoint='tokenrefresh')
 api.add_resource(MachineListAPI, '/machines', endpoint='machines')
 api.add_resource(MachineAPI, '/machines/<int:id>', endpoint='machine')
 api.add_resource(RevisionListAPI, '/revisions', endpoint='revisions')

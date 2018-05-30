@@ -1,6 +1,6 @@
 from flask_restful import Resource, reqparse, fields, marshal_with
 from dateutil import parser
-from .authentication import auth
+from flask_jwt_extended import jwt_required
 from .revisions import revision_fields
 from ... import db
 
@@ -58,7 +58,7 @@ class Futuremark3DMark06ResultAPI(Resource):
     def get(self, id):
         return Futuremark3DMark06Result.query.get_or_404(id)
 
-    @auth.login_required
+    @jwt_required
     @marshal_with(futuremark3dmark06result_fields,
                   envelope='futuremark3dmark06result')
     def put(self, id):
@@ -75,7 +75,7 @@ class Futuremark3DMark06ResultAPI(Resource):
         db.session.commit()
         return futuremark3dmark06result
 
-    @auth.login_required
+    @jwt_required
     def delete(self, id):
         Futuremark3DMark06Result.query\
             .filter(Futuremark3DMark06Result.id == id).delete()
@@ -108,7 +108,7 @@ class RevisionFuturemark3DMark06ResultListAPI(Resource):
         revision = Revision.query.get_or_404(id)
         return revision.futuremark3dmark06results.all()
 
-    @auth.login_required
+    @jwt_required
     @marshal_with(futuremark3dmark06result_fields,
                   envelope='futuremark3dmark06result')
     def post(self, id):

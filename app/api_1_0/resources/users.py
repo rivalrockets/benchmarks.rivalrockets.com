@@ -1,6 +1,7 @@
 from flask import g
 from flask_restful import Resource, reqparse, fields, marshal_with
-from .authentication import auth
+from flask_jwt_extended import (create_access_token, create_refresh_token,
+    jwt_required, get_jwt_identity)
 from ... import db
 from ...models import User
 
@@ -36,6 +37,8 @@ class UserListAPI(Resource):
         user.hash_password(args['password'])
         db.session.add(user)
         db.session.commit()
+        access_token = create_access_token(identity=args['username'])
+        refresh_token = create_refresh_token(identity=args['username'])
         return user, 201
 
 
@@ -53,13 +56,13 @@ class UserAPI(Resource):
     def get(self, id):
         return User.query.get_or_404(id)
 
-    @auth.login_required
+    @jwt_required
     @marshal_with(user_fields, envelope='user')
     def put(self, id):
         user = User.query.get_or_404(id)
 
         # only currently logged in user allowed to change their login or pass
-        if g.user.id == id:
+        if g.user.username == get_jwt_identity():
             # as seen in other places, loop through supplied args to apply
             # the difference is that we're watching out for the password
             args = self.reqparse.parse_args()

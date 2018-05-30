@@ -1,10 +1,10 @@
 from flask import g
 from flask_restful import Resource, reqparse, fields, marshal_with
 from dateutil import parser
-from .authentication import auth
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from .machines import machine_fields
 from ... import db
-from ...models import Machine, Revision
+from ...models import Machine, Revision, User
 
 
 revision_fields = {
@@ -63,7 +63,7 @@ class RevisionAPI(Resource):
     def get(self, id):
         return Revision.query.get_or_404(id)
 
-    @auth.login_required
+    @jwt_required
     @marshal_with(revision_fields, envelope='revision')
     def put(self, id):
         revision = Revision.query.get_or_404(id)
@@ -79,7 +79,7 @@ class RevisionAPI(Resource):
         db.session.commit()
         return revision
 
-    @auth.login_required
+    @jwt_required
     def delete(self, id):
         Revision.query.filter(Revision.id == id).delete()
         db.session.commit()
@@ -115,7 +115,7 @@ class MachineRevisionListAPI(Resource):
         machine = Machine.query.get_or_404(id)
         return machine.revisions.order_by(Revision.timestamp.desc()).all()
 
-    @auth.login_required
+    @jwt_required
     @marshal_with(revision_fields, envelope='revision')
     def post(self, id):
         args = self.reqparse.parse_args()
@@ -126,6 +126,8 @@ class MachineRevisionListAPI(Resource):
         except TypeError:
             ts = None # none will use the model's default (current time)
 
+        current_username = get_jwt_identity()
+        current_user = User.find_by_username(current_username)
         machine = Machine.query.get_or_404(id)
 
         revision = Revision(
@@ -144,7 +146,7 @@ class MachineRevisionListAPI(Resource):
             revision_notes=args['revision_notes'],
             pcpartpicker_url=args['pcpartpicker_url'],
             timestamp=ts,
-            author_id=g.user.id)
+            author_id=current_user.id)
 
         machine.revisions.append(revision)
 

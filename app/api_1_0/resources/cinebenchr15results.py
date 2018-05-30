@@ -1,7 +1,7 @@
 from flask import g
 from flask_restful import Resource, reqparse, fields, marshal_with
 from dateutil import parser
-from ..resources.authentication import auth
+from flask_jwt_extended import jwt_required
 from .revisions import revision_fields
 from ... import db
 from ...models import Revision, CinebenchR15Result
@@ -37,7 +37,7 @@ class CinebenchR15ResultAPI(Resource):
     def get(self, id):
         return CinebenchR15Result.query.get_or_404(id)
 
-    @auth.login_required
+    @jwt_required
     @marshal_with(cinebenchr15result_fields, envelope='cinebenchr15result')
     def put(self, id):
         cinebenchr15result = CinebenchR15Result.query.get_or_404(id)
@@ -52,7 +52,7 @@ class CinebenchR15ResultAPI(Resource):
         db.session.commit()
         return cinebenchr15result
 
-    @auth.login_required
+    @jwt_required
     def delete(self, id):
         CinebenchR15Result.query.filter(CinebenchR15Result.id == id).delete()
         db.session.commit()
@@ -72,7 +72,7 @@ class RevisionCinebenchR15ResultListAPI(Resource):
         revision = Revision.query.get_or_404(id)
         return revision.cinebenchr15results.all()
 
-    @auth.login_required
+    @jwt_required
     @marshal_with(cinebenchr15result_fields, envelope='cinebenchr15result')
     def post(self, id):
         args = self.reqparse.parse_args()
