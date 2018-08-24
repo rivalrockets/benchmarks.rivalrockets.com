@@ -2,8 +2,8 @@ from flask import g, make_response, jsonify
 from flask_restful import Resource, reqparse
 from flask_httpauth import HTTPBasicAuth
 from flask_jwt_extended import (create_access_token, create_refresh_token,
-    jwt_refresh_token_required, get_jwt_identity)
-from app.models import User
+    jwt_refresh_token_required, jwt_required, get_jwt_identity, get_raw_jwt)
+from app.models import User, RevokedToken
 
 
 auth = HTTPBasicAuth()
@@ -24,6 +24,7 @@ def verify_password(username, password):
         return False
     g.user = user
     return True
+
 
 class UserLogin(Resource):
     def __init__(self):
@@ -49,9 +50,34 @@ class UserLogin(Resource):
                 'refresh_token': refresh_token
                 }
 
+
 class TokenRefresh(Resource):
     @jwt_refresh_token_required
     def post(self):
         current_user = get_jwt_identity()
         access_token = create_access_token(identity = current_user)
         return {'access_token': access_token}
+
+
+class UserLogoutAccess(Resource):
+    @jwt_required
+    def post(self):
+        jti = get_raw_jwt()['jti']
+        try:
+            revoked_token = RevokedToken(jti = jti)
+            revoked_token.add()
+            return {'message': 'Access token has been revoked'}
+        except:
+            return {'message': 'Something went wrong'}, 500
+
+
+class UserLogoutRefresh(Resource):
+    @jwt_refresh_token_required
+    def post(self):
+        jti = get_raw_jwt()['jti']
+        try:
+            revoked_token = RevokedToken(jti = jti)
+            revoked_token.add()
+            return {'message': 'Refresh token has been revoked'}
+        except:
+            return {'message': 'Something went wrong'}, 500

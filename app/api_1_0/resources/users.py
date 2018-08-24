@@ -1,9 +1,9 @@
 from flask import g
 from flask_restful import Resource, reqparse, fields, marshal_with
 from flask_jwt_extended import (create_access_token, create_refresh_token,
-    jwt_required, get_jwt_identity)
+    jwt_required, get_jwt_identity, get_raw_jwt)
 from ... import db
-from ...models import User
+from ...models import User, RevokedToken
 
 
 # flask_restful fields usage:
@@ -77,3 +77,15 @@ class UserAPI(Resource):
             return user, 201
         else:
             return user, 403
+
+
+class UserLogoutAPI(Resource):
+    @jwt_required
+    def post(self):
+        jti = get_raw_jwt()['jti']
+        try:
+            revoked_token = RevokedToken(jti = jti)
+            revoked_token.add()
+            return {'message': 'Refresh token has been revoked'}
+        except:
+            return {'message': 'Something went wrong'}, 500
