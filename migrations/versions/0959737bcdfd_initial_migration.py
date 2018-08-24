@@ -21,7 +21,7 @@ def upgrade():
     sa.Column('password_hash', sa.String(length=128), nullable=True),
     sa.PrimaryKeyConstraint('id')
     )
-    op.create_index(op.f('ix_users_username'), 'users', ['username'], unique=False)
+    op.create_index(op.f('ix_users_username'), 'users', ['username'], unique=True)
     op.create_table('machines',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('system_name', sa.Text(), nullable=True),
