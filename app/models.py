@@ -8,11 +8,50 @@ from passlib.hash import pbkdf2_sha256 as sha256
 
 from . import db
 
+class Permission:
+    POST = 0x01 # 0000 0001 (update)
+    PUT = 0x02 # 0000 0010 (create)
+    DELETE = 0x04 # 0000 0100
+    ADMINISTER = 0x80 # 1000 0000 (all?)
+
+
+class Role(db.Model):
+    __tablename__ = 'roles'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(64), unique=True)
+    default = db.Column(db.Boolean, default=False, index=True)
+    permissions = db.Column(db.Integer)
+    users = db.relationship('User', backref='role', lazy='dynamic')
+
+    @staticmethod
+    def insert_roles():
+        roles = {
+            # user can create and update
+            'User': (Permission.POST |
+                     Permission.PUT, True),
+            'Maintainer': (Permission.POST |
+                           Permission.PUT |
+                           Permission.DELETE, False),
+            'Administrator': (0xff, False)
+        }
+        for r in roles:
+            role = Role.query.filter_by(name=r).first()
+            if role is None:
+                role = Role(name=r)
+            role.permissions = roles[r][0]
+            role.default = roles[r][1]
+            db.session.add(role)
+        db.session.commit()
+
+        def __repr__(self):
+            return '<Role %r>' % self.name
+
 
 class User(db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(32), index=True, unique=True)
+    role_id = db.Column(db.Integer, db.ForeignKey('roles.id'))
     password_hash = db.Column(db.String(128))
     machines = db.relationship('Machine', backref='author', lazy='dynamic')
 
@@ -21,6 +60,13 @@ class User(db.Model):
 
     def verify_password(self, password):
         return pwd_context.verify(password, self.password_hash)
+
+    def can(self, permissions):
+        return self.role is not None and \
+            (self.role.permissions & permissions) == permissions
+
+    def is_administrator(self):
+        return self.can(Permission.ADMINISTER)
 
     @staticmethod
     def generate_hash(password):
