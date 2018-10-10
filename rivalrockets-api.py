@@ -1,6 +1,6 @@
 import os
 from app import create_app, db
-from app.models import User, Machine, Revision, RevokedToken
+from app.models import User, Machine, Revision, Role, RevokedToken
 from flask_migrate import Migrate
 import click
 from flask_jwt_extended import JWTManager
@@ -22,7 +22,7 @@ def check_if_token_in_blacklist(decrypted_token):
 @app.shell_context_processor
 def make_shell_context():
     return dict(app=app, db=db, User=User, Machine=Machine,
-                Revision=Revision)
+                Revision=Revision, Role=Role)
 
 
 @app.cli.command()
